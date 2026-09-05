@@ -1,0 +1,27 @@
+{
+  "name": "fakestnews",
+  "version": "1.0.0",
+  "description": "this Repo holds the code for a news site named FakestNews. It's a project by several students.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noamy09/FakestNews.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/noamy09/FakestNews/issues"
+  },
+  "homepage": "https://github.com/noamy09/FakestNews#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.9.5"
+  }
+}
