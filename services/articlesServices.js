@@ -2,7 +2,7 @@ const Article = require("../models/articles");
 const mongoose = require("mongoose");
 
 // Helper functions:
-const allowedStatuses = ["draft", "published", "rejected"];
+const allowedStatuses = ["pending", "published", "draft"];
 
 const articleValidation = (article) => {
     if (article === null || article === undefined) {
@@ -25,6 +25,19 @@ const articleValidation = (article) => {
     }
     if (article.status && !allowedStatuses.includes(article.status)) {
         throw new Error(`Invalid status: ${article.status}`, 400);
+    }
+    if (article.updatesHistory && Array.isArray(article.updatesHistory)) {
+        article.updatesHistory.forEach(update => {
+            if (update === null || update === undefined) {
+                throw new Error(`Update is missing`, 400);
+            }
+            if (update.updaterId === null || update.updaterId === undefined) {
+                throw new Error(`Updater ID in update ${JSON.stringify(update)} is missing`, 400);
+            }
+            if (!mongoose.Types.ObjectId.isValid(update.updaterId)) {
+                throw new Error(`Invalid or missing Updater ID in update ${JSON.stringify(update)}`, 400);
+            }
+        });
     }
 }
 
@@ -91,13 +104,75 @@ const createArticle = async (article) => {
     return await newArticle.save();
 }
 
-const updateArticle = async (id, article) => {
-    IDValidation(id);
-    if (article === null || article === undefined) {
+const updateArticle = async (ArticleId, articleData) => {
+    IDValidation(ArticleId);
+    if (!articleData || typeof articleData !== "object") {
         throw new Error("No changes were given", 400);
     }
+
+    const existingArticle = await Article.findById(ArticleId);
+    if (!existingArticle) {
+        throw new Error("Article not found", 404);
+    }
+
+    const { updaterId, edits, _id, ...otherFields } = articleData; //extract the metadata of the update and keep sperately from the rest of the update
+
+    const updates = {};
+
+    switch (otherFields.status) {
+        case 'draft':
+        case 'pending':
+            const { status, ...rest } = otherFields; //seperate status from other fields
+
+            let previousDraft = {};
+
+            if (existingArticle.draft) //pull the previous draft if it exists
+                previousDraft = existingArticle.draft.toObject();
+
+            const mergedDraft = { ...previousDraft, ...rest }; //merge the previous draft with the new fields
+
+            updates.$set = { //update the draft and status
+                draft: mergedDraft,
+                status: status
+            }
+
+            break;
+
+        case 'published':
+            if (!updaterId || !mongoose.Types.ObjectId.isValid(updaterId)) {
+                throw new Error("Invalid or missing Updater ID for publishing", 400);
+            }
+
+            let draftContent = {}; //like before we pull the draft content if exists
+            if (existingArticle.draft) {
+                draftContent = existingArticle.draft.toObject();
+                delete draftContent._id; // prevent overriding main article _id
+            }
+
+            updates.$set = {
+                ...draftContent, //merges draft content with other fields that came with the publish request
+                ...otherFields,
+                status: "published",
+                draft: null      //clears draft
+            };
+
+            updates.$push = { //pushes the new update to the updatesHistory array
+                updatesHistory: {
+                    updaterId: updaterId,
+                    updatedAt: new Date(),
+                    edits: edits || "Article published."
+                }
+            };
+
+            break;
+
+        default:
+            throw new Error("Invalid or missing status", 400);
+    }
+
+
     const updatedArticle = await Article.findByIdAndUpdate(
-        id, article, { new: true, runValidators: true });
+        ArticleId, updates, { new: true, runValidators: true });
     if (!updatedArticle) {
         throw new Error("Article not found", 404);
     }
