@@ -8,7 +8,9 @@ const notesRoutes = require('./notesRoutes');
 const permissionsRoutes = require('./permissionsRoutes');
 const statisticsRoutes = require('./statisticsRoutes');
 const usersRoutes = require('./usersRoutes');
+const viewRoutes = require('./viewRoutes');
 
+router.use('/', viewRoutes);
 router.use('/articles', articlesRoutes);
 router.use('/comments', commentsRoutes);
 router.use('/notes', notesRoutes);
