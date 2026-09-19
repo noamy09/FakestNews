@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= article.title %> | Fakest News</title>
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const articleId = "<%= article._id %>";
+      const readArticles = JSON.parse(localStorage.getItem("fakest_news_read_articles") || "[]");
+      if (!readArticles.includes(articleId)) {
+        readArticles.push(articleId);
+        localStorage.setItem("fakest_news_read_articles", JSON.stringify(readArticles));
+      }
+    });
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/articles/public" class="brand-link">Fakest News</a>
+  </header>
+
+  <main style="max-width: 800px; margin: 2rem auto; padding: 0 1rem; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 2rem;">
+    <a href="/articles/public" style="color: #0284c7; text-decoration: none; font-weight: 500;">&larr; Back to Feed</a>
+    
+    <div style="margin-top: 1rem;">
+      <span class="badge"><%= article.category %></span>
+      <h1 style="font-size: 2rem; margin: 0.5rem 0;"><%= article.title %></h1>
+      <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">
+        <span>By <%= article.author ? (article.author.name || article.author.username) : "Staff" %></span> | 
+        <span><%= new Date(article.createdAt).toLocaleDateString("en-US") %></span>
+      </div>
+    </div>
+
+    <% if (article.imageUrl) { %>
+      <img src="<%= article.imageUrl %>" alt="<%= article.title %>" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 6px; margin-bottom: 1.5rem;">
+    <% } %>
+
+    <div style="line-height: 1.8; font-size: 1.1rem; color: #1e293b;">
+      <%- article.content %>
+    </div>
+  </main>
+</body>
+</html>
