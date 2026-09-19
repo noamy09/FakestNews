@@ -1,3 +1,4 @@
+const AppError = require("../utils/AppError");
 const Article = require("../models/articles");
 const mongoose = require("mongoose");
 
@@ -6,36 +7,27 @@ const allowedStatuses = ["pending", "published", "draft"];
 
 const articleValidation = (article) => {
     if (article === null || article === undefined) {
-        throw new Error("Article is null", 400);
+        throw new AppError("Article is null", 400);
     }
     if (article.title === null || article.title === undefined) {
-        throw new Error("Article title is missing", 400);
-    }
-    if (article.content === null || article.content === undefined) {
-        throw new Error("Article content is missing", 400);
-    }
-    if (article.category === null || article.category === undefined) {
-        throw new Error("Article category is missing", 400);
-    }
-    if (article.summary === null || article.summary === undefined) {
-        throw new Error("Article summary is missing", 400);
+        throw new AppError("Article title is missing", 400);
     }
     if (article.author === null || article.author === undefined) {
-        throw new Error("Article author is missing", 400);
+        throw new AppError("Article author is missing", 400);
     }
     if (article.status && !allowedStatuses.includes(article.status)) {
-        throw new Error(`Invalid status: ${article.status}`, 400);
+        throw new AppError(`Invalid status: ${article.status}`, 400);
     }
     if (article.updatesHistory && Array.isArray(article.updatesHistory)) {
         article.updatesHistory.forEach(update => {
             if (update === null || update === undefined) {
-                throw new Error(`Update is missing`, 400);
+                throw new AppError(`Update is missing`, 400);
             }
             if (update.updaterId === null || update.updaterId === undefined) {
-                throw new Error(`Updater ID in update ${JSON.stringify(update)} is missing`, 400);
+                throw new AppError(`Updater ID in update ${JSON.stringify(update)} is missing`, 400);
             }
             if (!mongoose.Types.ObjectId.isValid(update.updaterId)) {
-                throw new Error(`Invalid or missing Updater ID in update ${JSON.stringify(update)}`, 400);
+                throw new AppError(`Invalid or missing Updater ID in update ${JSON.stringify(update)}`, 400);
             }
         });
     }
@@ -43,7 +35,7 @@ const articleValidation = (article) => {
 
 const IDValidation = (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("Invalid article ID", 400);
+        throw new AppError("Invalid article ID", 400);
     }
 }
 
@@ -63,37 +55,53 @@ const getArticles = async (query = {}) => {
                     if (sortBy.order === -1 || sortBy.order === 1) {
                         sort = { [sortBy.field]: sortBy.order };
                     } else {
-                        throw new Error("Invalid sort order", 400);
+                        throw new AppError("Invalid sort order", 400);
                     }
                 } else {
                     sort = { [sortBy.field]: -1 };
                 }
             } else {
-                throw new Error("Invalid sort parameter", 400);
+                throw new AppError("Invalid sort parameter", 400);
             }
         } catch (error) {
-            throw new Error("Invalid sort parameters", 400);
+            throw new AppError("Invalid sort parameters", 400);
         }
     }
 
-    allowedFilters.forEach(field => {
-        if (query[field]) {
-            filter[field] = query[field];
+    // Helper to escape regex characters from failing the search
+    const escapeRegex = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+    allowedFilters.forEach(field => { //builds the filter object
+        if (query[field]) { //checks if the field exists in the query
+            if (field === 'title') { //if the field is title, we use regex
+                filter[field] = { $regex: escapeRegex(query[field]), $options: 'i' }; //add the field to the filter (case insensitive)
+            } else { //otherwise we use the field as is
+                filter[field] = query[field]; //add the field to the filter
+            }
         }
     });
 
+    if (query.search) { //if there is a search query, we add it to the filter
+        const safeSearch = escapeRegex(query.search); //escape the search query
+        filter.$or = [ //add the search query to the filter (checks for the search query in the title, summary, and content)
+            { title: { $regex: safeSearch, $options: 'i' } }, //search in title (case insensitive)
+            { summary: { $regex: safeSearch, $options: 'i' } }, //search in summary (case insensitive)
+            { content: { $regex: safeSearch, $options: 'i' } } //search in content (case insensitive)
+        ];
+    }
+
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 20;
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit; //skips the articles that are not needed (for pagination)
 
-    return await Article.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
+    return await Article.find(filter).sort(sort).skip(skip).limit(limit);
 };
 
 const getArticleById = async (id) => {
     IDValidation(id);
     const article = await Article.findById(id);
     if (!article) {
-        throw new Error("Article not found", 404);
+        throw new AppError("Article not found", 404);
     }
     return article;
 }
@@ -107,12 +115,12 @@ const createArticle = async (article) => {
 const updateArticle = async (ArticleId, articleData) => {
     IDValidation(ArticleId);
     if (!articleData || typeof articleData !== "object") {
-        throw new Error("No changes were given", 400);
+        throw new AppError("No changes were given", 400);
     }
 
     const existingArticle = await Article.findById(ArticleId);
     if (!existingArticle) {
-        throw new Error("Article not found", 404);
+        throw new AppError("Article not found", 404);
     }
 
     const { updaterId, edits, _id, ...otherFields } = articleData; //extract the metadata of the update and keep sperately from the rest of the update
@@ -140,7 +148,7 @@ const updateArticle = async (ArticleId, articleData) => {
 
         case 'published':
             if (!updaterId || !mongoose.Types.ObjectId.isValid(updaterId)) {
-                throw new Error("Invalid or missing Updater ID for publishing", 400);
+                throw new AppError("Invalid or missing Updater ID for publishing", 400);
             }
 
             let draftContent = {}; //like before we pull the draft content if exists
@@ -148,6 +156,29 @@ const updateArticle = async (ArticleId, articleData) => {
                 draftContent = existingArticle.draft.toObject();
                 delete draftContent._id; // prevent overriding main article _id
             }
+            //gets the value of the field from the new article data, the draft, or the existing article
+            const getFieldValue = (fieldName) => {
+                if (otherFields[fieldName] !== undefined) return otherFields[fieldName];
+                if (draftContent[fieldName] !== undefined) return draftContent[fieldName];
+                return existingArticle[fieldName];
+            };
+
+            const titlePub = getFieldValue('title');
+            const categoryPub = getFieldValue('category');
+            const summaryPub = getFieldValue('summary');
+            const contentPub = getFieldValue('content');
+
+            //validates that the required fields are not missing
+            const validateField = (val, fieldName) => {
+                if (!val || typeof val !== 'string') {
+                    throw new AppError(`Required field ${fieldName} is missing`, 400);
+                }
+            };
+
+            validateField(titlePub, 'title');
+            validateField(categoryPub, 'category');
+            validateField(summaryPub, 'summary');
+            validateField(contentPub, 'content');
 
             updates.$set = {
                 ...draftContent, //merges draft content with other fields that came with the publish request
@@ -167,14 +198,14 @@ const updateArticle = async (ArticleId, articleData) => {
             break;
 
         default:
-            throw new Error("Invalid or missing status", 400);
+            throw new AppError("Invalid or missing status", 400);
     }
 
 
     const updatedArticle = await Article.findByIdAndUpdate(
-        ArticleId, updates, { new: true, runValidators: true });
+        ArticleId, updates, { returnDocument: 'after', runValidators: true });
     if (!updatedArticle) {
-        throw new Error("Article not found", 404);
+        throw new AppError("Article not found", 404);
     }
     return updatedArticle;
 }
@@ -183,7 +214,7 @@ const deleteArticle = async (id) => {
     IDValidation(id);
     const deletedArticle = await Article.findByIdAndDelete(id);
     if (!deletedArticle) {
-        throw new Error("Article not found", 404);
+        throw new AppError("Article not found", 404);
     }
     return deletedArticle;
 }

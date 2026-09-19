@@ -5,7 +5,10 @@ const controller = require('../controllers/articlesController');
 router.get('/', controller.getAll);
 router.get('/:id', controller.getById);
 router.post('/', controller.create);
-router.put('/:id', controller.update);
+router.put('/:id/autosave', controller.autosave);
+router.post('/:id/submit', controller.submit);
+router.post('/:id/review', controller.review);
+router.post('/:id/approve', controller.approve);
 router.delete('/:id', controller.delete);
 
 module.exports = router;
