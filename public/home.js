@@ -1,125 +1,134 @@
-document.addEventListener("DOMContentLoaded", () => {
-    let currentPage = 1;
-    let isLoading = false;
-    let hasMore = true;
+let currentPage = 1;
+let isLoading = false;
+let hasMore = true;
 
-    const grid = document.getElementById("articles-grid");
-    const sentinel = document.getElementById("scroll-sentinel");
-    const loadingText = document.getElementById("loading-text");
+const articlesGrid = document.getElementById('articlesGrid');
+const searchInput = document.getElementById('searchInput');
+const categorySelect = document.getElementById('categorySelect');
+const sortSelect = document.getElementById('sortSelect');
+const statusFilter = document.getElementById('statusFilter');
 
-    const searchInput = document.getElementById("search-input");
-    const categoryFilter = document.getElementById("category-filter");
-    const readFilter = document.getElementById("read-filter");
-    const sortFilter = document.getElementById("sort-filter");
+let statusMessage = document.getElementById('feedStatusMessage');
+if (!statusMessage) {
+  statusMessage = document.createElement('div');
+  statusMessage.id = 'feedStatusMessage';
+  statusMessage.className = 'feed-status-message';
+  statusMessage.style.textAlign = 'center';
+  statusMessage.style.padding = '20px';
+  statusMessage.style.color = '#64748b';
+  statusMessage.style.fontSize = '0.95rem';
 
-    function getReadArticles() {
-        return JSON.parse(localStorage.getItem("fakest_news_read") || "[]");
+  const sentinelElement = document.getElementById('scrollSentinel');
+  if (sentinelElement && sentinelElement.parentNode) {
+    sentinelElement.parentNode.insertBefore(statusMessage, sentinelElement);
+  } else {
+    document.body.appendChild(statusMessage);
+  }
+}
+
+async function loadArticles(reset = false) {
+  if (isLoading || (!hasMore && !reset)) return;
+  isLoading = true;
+
+  if (reset) {
+    currentPage = 1;
+    hasMore = true;
+    if (articlesGrid) articlesGrid.innerHTML = '';
+  }
+
+  statusMessage.textContent = 'Loading articles...';
+  statusMessage.style.display = 'block';
+
+  const query = new URLSearchParams({
+    page: currentPage,
+    limit: 20,
+    search: searchInput ? searchInput.value.trim() : '',
+    category: categorySelect ? categorySelect.value : '',
+    sort: sortSelect ? sortSelect.value : ''
+  });
+
+  try {
+    const res = await fetch(`/articles?${query.toString()}`);
+    const data = await res.json();
+    const articles = Array.isArray(data) ? data : (data.articles || []);
+
+    if (!articles || articles.length === 0) {
+      hasMore = false;
+      if (reset && articlesGrid && articlesGrid.children.length === 0) {
+        statusMessage.textContent = 'No articles found.';
+      } else {
+        statusMessage.textContent = 'No more articles';
+      }
+      return;
     }
 
-    function markReadCards() {
-        const readIds = getReadArticles();
-        document.querySelectorAll(".article-card").forEach(card => {
-            const id = card.getAttribute("data-id");
-            if (readIds.includes(id)) {
-                card.classList.add("is-read");
-            }
-        });
+    renderArticles(articles);
+    currentPage++;
+
+    if (articles.length < 20) {
+      hasMore = false;
+      statusMessage.textContent = 'No more articles';
+    } else {
+      statusMessage.style.display = 'none';
     }
+  } catch (err) {
+    console.error('Failed to load articles from API:', err);
+    statusMessage.textContent = 'Error loading articles.';
+  } finally {
+    isLoading = false;
+  }
+}
 
-    markReadCards();
+function renderArticles(articles) {
+  if (!articlesGrid) return;
+  const readList = JSON.parse(localStorage.getItem('readArticles') || '[]');
 
-    function createArticleCard(article) {
-        const isRead = getReadArticles().includes(article._id);
-        const card = document.createElement("article");
-        card.className = `article-card ${isRead ? "is-read" : ""}`;
-        card.setAttribute("data-id", article._id);
+  articles.forEach(article => {
+    const isRead = readList.includes(article._id);
 
-        const authorName = article.author ? (article.author.name || article.author.username) : "Staff";
-        const dateStr = new Date(article.createdAt).toLocaleDateString("en-US");
+    if (statusFilter && statusFilter.value === 'read' && !isRead) return;
+    if (statusFilter && statusFilter.value === 'unread' && isRead) return;
 
-        card.innerHTML = `
-            <img src="${article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80'}" alt="${article.title}">
-            <div class="card-content">
-                <span class="badge">${article.category || 'General'}</span>
-                <h2><a href="/articles/view/${article._id}">${article.title}</a></h2>
-                <p class="summary">${article.summary || ''}</p>
-                <div class="card-meta">
-                    <span>By: ${authorName}</span>
-                    <span>${dateStr}</span>
-                </div>
-            </div>
-        `;
-        return card;
+    const card = document.createElement('article');
+    card.className = `article-card ${isRead ? 'read' : ''}`;
+    card.innerHTML = `
+      <a href="/articles/${article._id}">
+        <img src="${article.image || '/images/default.jpg'}" alt="${article.title || 'Article image'}">
+        <div class="card-content">
+          <span class="category-badge">${article.category || 'General'}</span>
+          <h3>${article.title || ''}</h3>
+          <p>${article.description || ''}</p>
+          <div class="card-footer">
+            <span>👁️ ${article.views || 0} views</span>
+          </div>
+        </div>
+      </a>
+    `;
+    articlesGrid.appendChild(card);
+  });
+}
+
+// Infinite scroll with IntersectionObserver
+const sentinel = document.getElementById('scrollSentinel');
+if (sentinel) {
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && hasMore && !isLoading) {
+      loadArticles();
     }
+  }, { rootMargin: '200px' });
+  observer.observe(sentinel);
+}
 
-    async function fetchArticles(pageToLoad, replace = false) {
-        if (isLoading) return;
-        isLoading = true;
-        if (loadingText) loadingText.style.display = "block";
+let debounceTimer;
+if (searchInput) {
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => loadArticles(true), 300);
+  });
+}
 
-        const params = new URLSearchParams({
-            page: pageToLoad,
-            limit: 20,
-            status: "published",
-            search: searchInput ? searchInput.value.trim() : "",
-            category: categoryFilter ? categoryFilter.value : "",
-            sort: sortFilter ? sortFilter.value : ""
-        });
+if (categorySelect) categorySelect.addEventListener('change', () => loadArticles(true));
+if (sortSelect) sortSelect.addEventListener('change', () => loadArticles(true));
+if (statusFilter) statusFilter.addEventListener('change', () => loadArticles(true));
 
-        try {
-            const res = await fetch(`/articles?${params.toString()}`);
-            const data = await res.json();
-            const articles = data.articles || (Array.isArray(data) ? data : []);
-
-            if (replace && grid) {
-                grid.innerHTML = "";
-            }
-
-            const readStatus = readFilter ? readFilter.value : "";
-            const readIds = getReadArticles();
-
-            articles.forEach(article => {
-                const isRead = readIds.includes(article._id);
-                if (readStatus === "read" && !isRead) return;
-                if (readStatus === "unread" && isRead) return;
-
-                if (grid) grid.appendChild(createArticleCard(article));
-            });
-
-            if (articles.length < 20) {
-                hasMore = false;
-                if (loadingText) loadingText.textContent = "No more articles to load.";
-            } else {
-                hasMore = true;
-                if (loadingText) loadingText.textContent = "Loading more articles...";
-            }
-
-            currentPage = pageToLoad;
-        } catch (err) {
-            console.error("Error fetching feed:", err);
-            if (loadingText) loadingText.textContent = "Failed to load articles.";
-        } finally {
-            isLoading = false;
-        }
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-            fetchArticles(currentPage + 1, false);
-        }
-    }, { rootMargin: "250px" });
-
-    if (sentinel) observer.observe(sentinel);
-
-    let debounceTimer;
-    if (searchInput) {
-        searchInput.addEventListener("input", () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => fetchArticles(1, true), 300);
-        });
-    }
-
-    if (categoryFilter) categoryFilter.addEventListener("change", () => fetchArticles(1, true));
-    if (sortFilter) sortFilter.addEventListener("change", () => fetchArticles(1, true));
-    if (readFilter) readFilter.addEventListener("change", () => fetchArticles(1, true));
-});
+loadArticles(true);
