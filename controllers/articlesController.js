@@ -27,30 +27,12 @@ exports.create = async (req, res) => {
     }
 };
 
-exports.autosave = async (req, res) => {
-    try {
-        const updatedArticle = await articleService.updateArticle(req.params.id, { ...req.body, status: 'draft' });
-        res.status(200).json(updatedArticle);
-    } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error autosaving article ${req.params.id}`, error: error.message });
-    }
-};
-
-exports.submit = async (req, res) => {
-    try {
-        const updatedArticle = await articleService.updateArticle(req.params.id, { ...req.body, status: 'pending' });
-        res.status(200).json(updatedArticle);
-    } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error submitting article ${req.params.id}`, error: error.message });
-    }
-};
-
-exports.review = async (req, res) => {
+exports.update = async (req, res) => {
     try {
         const updatedArticle = await articleService.updateArticle(req.params.id, req.body);
         res.status(200).json(updatedArticle);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error reviewing article ${req.params.id}`, error: error.message });
+        res.status(error.statusCode || 500).json({ message: `Error updating article ${req.params.id}`, error: error.message });
     }
 };
 
@@ -60,14 +42,5 @@ exports.delete = async (req, res) => {
         res.status(200).json(deletedArticle);
     } catch (error) {
         res.status(error.statusCode || 500).json({ message: `Error deleting article ${req.params.id}`, error: error.message });
-    }
-};
-
-exports.approve = async (req, res) => {
-    try {
-        const updatedArticle = await articleService.updateArticle(req.params.id, { ...req.body, status: 'published' });
-        res.status(200).json(updatedArticle);
-    } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error approving article ${req.params.id}`, error: error.message });
     }
 };

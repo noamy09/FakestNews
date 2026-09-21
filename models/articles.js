@@ -7,7 +7,8 @@ const draftSchema = new mongoose.Schema({
     category: { type: String },
     summary: { type: String },
     content: { type: String },
-    imageUrl: { type: String }
+    imageUrl: { type: String },
+    status: { type: String, enum: ["draft", "pending"] }
 }, { _id: false });
 
 const articleSchema = new mongoose.Schema({
@@ -17,7 +18,7 @@ const articleSchema = new mongoose.Schema({
     content: { type: String },
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     createdAt: { type: Date, default: () => Date.now() },
-    status: { type: String, enum: ["pending", "published", "draft"], default: "draft" },
+    status: { type: String, enum: ["unpublished", "published", "archived"], default: "unpublished" },
     imageUrl: { type: String, default: "placeholder.jpg" },
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     views: { type: Number, default: 0 },
