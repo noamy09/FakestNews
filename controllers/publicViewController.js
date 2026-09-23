@@ -2,52 +2,55 @@ const articlesServices = require('../services/articlesServices');
 const Article = require('../models/articles');
 
 exports.renderFeed = async (req, res, next) => {
-  try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 20;
-    const category = req.query.category;
-    const search = req.query.search;
+    try {
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 20;
+        const category = req.query.category;
+        const search = req.query.search;
+        const sort = req.query.sort || 'newest';
 
-    const result = await articlesServices.getArticles({
-      status: 'published',
-      category: category || undefined,
-      search: search || undefined,
-      page,
-      limit
-    });
+        let sortOption = { createdAt: -1 };
+        if (sort === 'oldest') {
+            sortOption = { createdAt: 1 };
+        } else if (sort === 'popular') {
+            sortOption = { views: -1 };
+        }
 
-    const articles = result.data || [];
-    const pagination = result.pagination || {};
+        const result = await articlesServices.getArticles({
+            status: 'published',
+            category: category || undefined,
+            search: search || undefined,
+            sort: sortOption,
+            page,
+            limit
+        });
 
-    const categories = await Article.distinct('category', { status: 'published' });
+        const articles = result.data || result || [];
+        const categories = await Article.distinct('category', { status: 'published' });
 
-    res.render('index', {
-      articles,
-      pagination,
-      categories,
-      currentCategory: category || '',
-      searchQuery: search || ''
-    });
-  } catch (err) {
-    next(err);
-  }
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+            return res.json(result);
+        }
+
+        res.render('index', {
+            articles,
+            categories,
+            currentCategory: category || '',
+            currentSort: sort
+        });
+    } catch (err) {
+        next(err);
+    }
 };
 
-exports.renderArticle = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    // getArticleById handles view tracking automatically
-    const article = await articlesServices.getArticleById(id);
-
-    if (!article || article.status !== 'published') {
-      return res.status(404).render('error', {
-        message: 'Article not found or is not published yet.'
-      });
+exports.renderArticlePage = async (req, res, next) => {
+    try {
+        const article = await articlesServices.getArticleById(req.params.id);
+        if (!article || article.status !== 'published') {
+            return res.status(404).render('error', { message: 'Article not found' });
+        }
+        res.render('article', { article });
+    } catch (err) {
+        next(err);
     }
-
-    res.render('article', { article });
-  } catch (err) {
-    next(err);
-  }
 };
