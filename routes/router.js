@@ -9,12 +9,12 @@ const permissionsRoutes = require('./permissionsRoutes');
 const statisticsRoutes = require('./statisticsRoutes');
 const usersRoutes = require('./usersRoutes');
 
-router.use('/articles', articlesRoutes);
-router.use('/comments', commentsRoutes);
-router.use('/notes', notesRoutes);
-router.use('/permissions', permissionsRoutes);
-router.use('/statistics', statisticsRoutes);
-router.use('/users', usersRoutes);
+router.use('/api/articles', articlesRoutes);
+router.use('/api/comments', commentsRoutes);
+router.use('/api/notes', notesRoutes);
+router.use('/api/permissions', permissionsRoutes);
+router.use('/api/statistics', statisticsRoutes);
+router.use('/api/users', usersRoutes);
 
 router.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "../public", "home.html"));
