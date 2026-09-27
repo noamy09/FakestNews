@@ -123,9 +123,9 @@ const getArticles = async (query = {}) => {
 
 const getArticleById = async (id) => {
     IDValidation(id);
-    
+
     const article = await Article.findById(id).lean(); //lean() returns plain JS objects instead of Mongoose documents (faster)
-    
+
     if (!article) {
         throw new AppError("Article not found", 404);
     }
@@ -136,7 +136,7 @@ const getArticleById = async (id) => {
     // Track views
     const currentHour = new Date();
     currentHour.setUTCMinutes(0, 0, 0); // Truncate to the current UTC hour for different time zones
-    
+
     Promise.all([
         Article.updateOne({ _id: id }, { $inc: { views: 1 } }), //increments the views count for the current request's article
         ArticleStatistics.findOneAndUpdate( //increments the views count for the current request's article in the statistics model for analitics purposes
@@ -181,7 +181,9 @@ const updateArticle = async (ArticleId, articleData) => {
             previousDraft = existingArticle.draft.toObject();
 
         const updatedDraft = { ...previousDraft, ...rest, status: draftStatus }; //merge the previous draft with the new fields, overriding the same fields between them with the new values (rest comes last), give the draft its own status
-
+        if (draftStatus === "pending") {
+            updatedDraft.editorNote = null;
+        }
         updates.$set = { //update the draft
             draft: updatedDraft
         }
