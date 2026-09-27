@@ -8,7 +8,15 @@ const draftSchema = new mongoose.Schema({
     summary: { type: String },
     content: { type: String },
     imageUrl: { type: String },
-    status: { type: String, enum: ["draft", "pending"] }
+    status: {
+        type: String,
+        enum: ["draft", "pending", "returned"],
+        default: "draft"
+    },
+    editorNote: {
+        type: String,
+        default: null
+    }
 }, { _id: false });
 
 const articleSchema = new mongoose.Schema({
