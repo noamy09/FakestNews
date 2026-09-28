@@ -3,7 +3,8 @@
 let viewsChart = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    const statusFilter = document.getElementById("status-filter");
+    const statusFilter =
+        document.getElementById("status-filter");
 
     loadArticles(statusFilter.value);
 
@@ -15,9 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Fetches articles according to the status selected by the editor
 async function loadArticles(filter) {
-    const container = document.getElementById("articles-container");
+    const container =
+        document.getElementById("articles-container");
 
-    container.innerHTML = "<p>Loading articles...</p>";
+    container.innerHTML =
+        "<p>Loading articles...</p>";
 
     let url = "/api/articles";
 
@@ -33,15 +36,21 @@ async function loadArticles(filter) {
         const response = await fetch(url);
 
         if (!response.ok) {
-            throw new Error("Failed to fetch articles");
+            throw new Error(
+                "Failed to fetch articles"
+            );
         }
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         renderArticles(result.data);
 
     } catch (error) {
-        console.error("Error loading articles:", error);
+        console.error(
+            "Error loading articles:",
+            error
+        );
 
         container.innerHTML =
             "<p>Could not load articles.</p>";
@@ -51,19 +60,37 @@ async function loadArticles(filter) {
 
 // Displays the articles inside the editor dashboard
 function renderArticles(articles) {
-    const container = document.getElementById("articles-container");
+    const container =
+        document.getElementById(
+            "articles-container"
+        );
 
-    if (!articles || articles.length === 0) {
-        container.innerHTML = "<p>No articles found.</p>";
+    if (
+        !articles ||
+        articles.length === 0
+    ) {
+        container.textContent = "";
+
+        const message =
+            document.createElement("p");
+
+        message.textContent =
+            "No articles found.";
+
+        container.appendChild(message);
+
         return;
     }
 
-    container.innerHTML = "";
+    container.textContent = "";
 
     articles.forEach((article) => {
-        const articleCard = document.createElement("article");
+        const articleCard =
+            document.createElement("article");
 
-        articleCard.classList.add("editor-article-card");
+        articleCard.classList.add(
+            "editor-article-card"
+        );
 
         const title =
             article.draft?.title ||
@@ -79,54 +106,124 @@ function renderArticles(articles) {
             article.category ||
             "No category";
 
-        articleCard.innerHTML = `
-            <h3>${title}</h3>
+        const titleElement =
+            document.createElement("h3");
 
-            <p>
-                <strong>Publication status:</strong>
-                ${article.status}
-            </p>
+        titleElement.textContent =
+            title;
 
-            <p>
-                <strong>Draft status:</strong>
-                ${draftStatus}
-            </p>
+        const publicationStatus =
+            document.createElement("p");
 
-            <p>
-                <strong>Category:</strong>
-                ${category}
-            </p>
+        const publicationLabel =
+            document.createElement("strong");
 
-            <button
-                type="button"
-                class="view-article-button"
-                data-article-id="${article._id}">
-                View article
-            </button>
-        `;
+        publicationLabel.textContent =
+            "Publication status: ";
 
-        container.appendChild(articleCard);
-    });
+        publicationStatus.appendChild(
+            publicationLabel
+        );
 
-    const viewButtons =
-        document.querySelectorAll(".view-article-button");
+        publicationStatus.append(
+            article.status || "Unknown"
+        );
 
-    viewButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            const articleId = button.dataset.articleId;
+        const draftStatusElement =
+            document.createElement("p");
 
-            loadArticleForEditor(articleId);
-            loadAnalytics(articleId);
-        });
+        const draftLabel =
+            document.createElement("strong");
+
+        draftLabel.textContent =
+            "Draft status: ";
+
+        draftStatusElement.appendChild(
+            draftLabel
+        );
+
+        draftStatusElement.append(
+            draftStatus
+        );
+
+        const categoryElement =
+            document.createElement("p");
+
+        const categoryLabel =
+            document.createElement("strong");
+
+        categoryLabel.textContent =
+            "Category: ";
+
+        categoryElement.appendChild(
+            categoryLabel
+        );
+
+        categoryElement.append(
+            category
+        );
+
+        const viewButton =
+            document.createElement("button");
+
+        viewButton.type = "button";
+
+        viewButton.classList.add(
+            "view-article-button"
+        );
+
+        viewButton.textContent =
+            "View article";
+
+        viewButton.addEventListener(
+            "click",
+            () => {
+                loadArticleForEditor(
+                    article._id
+                );
+
+                loadAnalytics(
+                    article._id
+                );
+            }
+        );
+
+        articleCard.appendChild(
+            titleElement
+        );
+
+        articleCard.appendChild(
+            publicationStatus
+        );
+
+        articleCard.appendChild(
+            draftStatusElement
+        );
+
+        articleCard.appendChild(
+            categoryElement
+        );
+
+        articleCard.appendChild(
+            viewButton
+        );
+
+        container.appendChild(
+            articleCard
+        );
     });
 }
 
 
 // Fetches a single article for editor review
 // without counting a public view
-async function loadArticleForEditor(articleId) {
+async function loadArticleForEditor(
+    articleId
+) {
     const container =
-        document.getElementById("review-container");
+        document.getElementById(
+            "review-container"
+        );
 
     container.innerHTML =
         "<p>Loading article...</p>";
@@ -137,15 +234,21 @@ async function loadArticleForEditor(articleId) {
         );
 
         if (!response.ok) {
-            throw new Error("Failed to fetch article");
+            throw new Error(
+                "Failed to fetch article"
+            );
         }
 
-        const article = await response.json();
+        const article =
+            await response.json();
 
         renderArticleDetails(article);
 
     } catch (error) {
-        console.error("Error loading article:", error);
+        console.error(
+            "Error loading article:",
+            error
+        );
 
         container.innerHTML =
             "<p>Could not load article.</p>";
@@ -156,118 +259,507 @@ async function loadArticleForEditor(articleId) {
 // Displays the selected article for editor review
 function renderArticleDetails(article) {
     const container =
-        document.getElementById("review-container");
+        document.getElementById(
+            "review-container"
+        );
 
     const title =
         article.draft?.title ||
         article.title ||
-        "Untitled article";
+        "";
 
     const summary =
         article.draft?.summary ||
         article.summary ||
-        "No summary";
+        "";
 
     const content =
         article.draft?.content ||
         article.content ||
-        "No content";
+        "";
 
     const category =
         article.draft?.category ||
         article.category ||
-        "No category";
+        "";
 
     const draftStatus =
         article.draft?.status ||
         "No active draft";
 
-    container.innerHTML = `
-        <div class="editor-article-details">
-            <h3>${title}</h3>
+    const hasPendingDraft =
+        article.draft?.status ===
+        "pending";
 
-            <p>
-                <strong>Category:</strong>
-                ${category}
-            </p>
+    container.textContent = "";
 
-            <p>
-                <strong>Publication status:</strong>
-                ${article.status}
-            </p>
+    const details =
+        document.createElement("div");
 
-            <p>
-                <strong>Draft status:</strong>
-                ${draftStatus}
-            </p>
+    details.classList.add(
+        "editor-article-details"
+    );
 
-            <h4>Summary</h4>
-            <p>${summary}</p>
+    const heading =
+        document.createElement("h3");
 
-            <h4>Content</h4>
-            <p>${content}</p>
+    heading.textContent =
+        "Article Details";
 
-            <div class="editor-actions">
-                <h4>Editor Actions</h4>
+    details.appendChild(heading);
 
-                <label for="editor-note">
-                    Note for reporter:
-                </label>
+    const publicationStatus =
+        document.createElement("p");
 
-                <textarea
-                    id="editor-note"
-                    rows="4"
-                    placeholder="Explain what needs to be corrected...">
-                </textarea>
+    const publicationLabel =
+        document.createElement("strong");
 
-                <button
-                    type="button"
-                    id="approve-article-button">
-                    Approve and publish
-                </button>
+    publicationLabel.textContent =
+        "Publication status: ";
 
-                <button
-                    type="button"
-                    id="return-article-button">
-                    Return for corrections
-                </button>
+    publicationStatus.appendChild(
+        publicationLabel
+    );
 
-                <button
-                    type="button"
-                    id="delete-article-button">
-                    Delete article
-                </button>
-            </div>
-        </div>
-    `;
+    publicationStatus.append(
+        article.status || "Unknown"
+    );
 
-    const approveButton =
-        document.getElementById("approve-article-button");
+    details.appendChild(
+        publicationStatus
+    );
 
-    approveButton.addEventListener("click", () => {
-        approveArticle(article._id);
-    });
+    const draftStatusElement =
+        document.createElement("p");
 
-    const returnButton =
-        document.getElementById("return-article-button");
+    const draftStatusLabel =
+        document.createElement("strong");
 
-    returnButton.addEventListener("click", () => {
-        returnArticleForCorrections(article._id);
-    });
+    draftStatusLabel.textContent =
+        "Draft status: ";
+
+    draftStatusElement.appendChild(
+        draftStatusLabel
+    );
+
+    draftStatusElement.append(
+        draftStatus
+    );
+
+    details.appendChild(
+        draftStatusElement
+    );
+
+    const titleLabel =
+        document.createElement("label");
+
+    titleLabel.htmlFor =
+        "edit-title";
+
+    titleLabel.textContent =
+        "Title:";
+
+    const titleInput =
+        document.createElement("input");
+
+    titleInput.type = "text";
+    titleInput.id = "edit-title";
+    titleInput.value = title;
+    titleInput.disabled =
+        !hasPendingDraft;
+
+    details.appendChild(
+        titleLabel
+    );
+
+    details.appendChild(
+        titleInput
+    );
+
+    const categoryLabel =
+        document.createElement("label");
+
+    categoryLabel.htmlFor =
+        "edit-category";
+
+    categoryLabel.textContent =
+        "Category:";
+
+    const categoryInput =
+        document.createElement("input");
+
+    categoryInput.type = "text";
+    categoryInput.id =
+        "edit-category";
+
+    categoryInput.value =
+        category;
+
+    categoryInput.disabled =
+        !hasPendingDraft;
+
+    details.appendChild(
+        categoryLabel
+    );
+
+    details.appendChild(
+        categoryInput
+    );
+
+    const summaryLabel =
+        document.createElement("label");
+
+    summaryLabel.htmlFor =
+        "edit-summary";
+
+    summaryLabel.textContent =
+        "Summary:";
+
+    const summaryInput =
+        document.createElement(
+            "textarea"
+        );
+
+    summaryInput.id =
+        "edit-summary";
+
+    summaryInput.rows = 4;
+    summaryInput.value = summary;
+
+    summaryInput.disabled =
+        !hasPendingDraft;
+
+    details.appendChild(
+        summaryLabel
+    );
+
+    details.appendChild(
+        summaryInput
+    );
+
+    const contentLabel =
+        document.createElement("label");
+
+    contentLabel.htmlFor =
+        "edit-content";
+
+    contentLabel.textContent =
+        "Content:";
+
+    const contentInput =
+        document.createElement(
+            "textarea"
+        );
+
+    contentInput.id =
+        "edit-content";
+
+    contentInput.rows = 10;
+    contentInput.value = content;
+
+    contentInput.disabled =
+        !hasPendingDraft;
+
+    details.appendChild(
+        contentLabel
+    );
+
+    details.appendChild(
+        contentInput
+    );
+
+    const actions =
+        document.createElement("div");
+
+    actions.classList.add(
+        "editor-actions"
+    );
+
+    const actionsHeading =
+        document.createElement("h4");
+
+    actionsHeading.textContent =
+        "Editor Actions";
+
+    actions.appendChild(
+        actionsHeading
+    );
+
+    if (hasPendingDraft) {
+        const saveButton =
+            document.createElement(
+                "button"
+            );
+
+        saveButton.type = "button";
+
+        saveButton.id =
+            "save-article-button";
+
+        saveButton.textContent =
+            "Save changes";
+
+        saveButton.addEventListener(
+            "click",
+            () => {
+                saveArticleChanges(
+                    article._id
+                );
+            }
+        );
+
+        actions.appendChild(
+            saveButton
+        );
+
+        const approveButton =
+            document.createElement(
+                "button"
+            );
+
+        approveButton.type =
+            "button";
+
+        approveButton.id =
+            "approve-article-button";
+
+        approveButton.textContent =
+            "Approve and publish";
+
+        approveButton.addEventListener(
+            "click",
+            () => {
+                approveArticle(
+                    article._id
+                );
+            }
+        );
+
+        actions.appendChild(
+            approveButton
+        );
+
+        const noteLabel =
+            document.createElement(
+                "label"
+            );
+
+        noteLabel.htmlFor =
+            "editor-note";
+
+        noteLabel.textContent =
+            "Note for reporter:";
+
+        const noteInput =
+            document.createElement(
+                "textarea"
+            );
+
+        noteInput.id =
+            "editor-note";
+
+        noteInput.rows = 4;
+
+        noteInput.placeholder =
+            "Explain what needs to be corrected...";
+
+        actions.appendChild(
+            noteLabel
+        );
+
+        actions.appendChild(
+            noteInput
+        );
+
+        const returnButton =
+            document.createElement(
+                "button"
+            );
+
+        returnButton.type =
+            "button";
+
+        returnButton.id =
+            "return-article-button";
+
+        returnButton.textContent =
+            "Return for corrections";
+
+        returnButton.addEventListener(
+            "click",
+            () => {
+                returnArticleForCorrections(
+                    article._id
+                );
+            }
+        );
+
+        actions.appendChild(
+            returnButton
+        );
+    } else {
+        const message =
+            document.createElement("p");
+
+        message.textContent =
+            "This article does not currently have a draft pending approval.";
+
+        actions.appendChild(
+            message
+        );
+    }
 
     const deleteButton =
-        document.getElementById("delete-article-button");
+        document.createElement(
+            "button"
+        );
 
-    deleteButton.addEventListener("click", () => {
-        deleteArticle(article._id);
-    });
+    deleteButton.type =
+        "button";
+
+    deleteButton.id =
+        "delete-article-button";
+
+    deleteButton.textContent =
+        "Delete article";
+
+    deleteButton.addEventListener(
+        "click",
+        () => {
+            deleteArticle(
+                article._id
+            );
+        }
+    );
+
+    actions.appendChild(
+        deleteButton
+    );
+
+    details.appendChild(
+        actions
+    );
+
+    container.appendChild(
+        details
+    );
+}
+
+
+// Saves changes made by the editor to a pending draft
+async function saveArticleChanges(
+    articleId
+) {
+    const title =
+        document
+            .getElementById(
+                "edit-title"
+            )
+            .value
+            .trim();
+
+    const category =
+        document
+            .getElementById(
+                "edit-category"
+            )
+            .value
+            .trim();
+
+    const summary =
+        document
+            .getElementById(
+                "edit-summary"
+            )
+            .value
+            .trim();
+
+    const content =
+        document
+            .getElementById(
+                "edit-content"
+            )
+            .value
+            .trim();
+
+    if (
+        !title ||
+        !summary ||
+        !content
+    ) {
+        alert(
+            "Title, summary and content are required."
+        );
+
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/articles/${articleId}`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    draftStatus:
+                        "pending",
+                    title: title,
+                    category: category,
+                    summary: summary,
+                    content: content
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to save article changes"
+            );
+        }
+
+        alert(
+            "Article changes saved."
+        );
+
+        loadArticleForEditor(
+            articleId
+        );
+
+        const statusFilter =
+            document.getElementById(
+                "status-filter"
+            );
+
+        loadArticles(
+            statusFilter.value
+        );
+
+    } catch (error) {
+        console.error(
+            "Error saving article changes:",
+            error
+        );
+
+        alert(
+            "Could not save article changes."
+        );
+    }
 }
 
 
 // Returns an article to the reporter with an editor note
-async function returnArticleForCorrections(articleId) {
+async function returnArticleForCorrections(
+    articleId
+) {
     const noteInput =
-        document.getElementById("editor-note");
+        document.getElementById(
+            "editor-note"
+        );
 
     const editorNote =
         noteInput.value.trim();
@@ -285,26 +777,39 @@ async function returnArticleForCorrections(articleId) {
             `/api/articles/${articleId}`,
             {
                 method: "PUT",
+
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                        "application/json"
                 },
+
                 body: JSON.stringify({
-                    draftStatus: "returned",
-                    editorNote: editorNote
+                    draftStatus:
+                        "returned",
+                    editorNote:
+                        editorNote
                 })
             }
         );
 
         if (!response.ok) {
-            throw new Error("Failed to return article");
+            throw new Error(
+                "Failed to return article"
+            );
         }
 
-        alert("Article returned for corrections.");
+        alert(
+            "Article returned for corrections."
+        );
 
         const statusFilter =
-            document.getElementById("status-filter");
+            document.getElementById(
+                "status-filter"
+            );
 
-        loadArticles(statusFilter.value);
+        loadArticles(
+            statusFilter.value
+        );
 
     } catch (error) {
         console.error(
@@ -320,7 +825,9 @@ async function returnArticleForCorrections(articleId) {
 
 
 // Deletes an article after editor confirmation
-async function deleteArticle(articleId) {
+async function deleteArticle(
+    articleId
+) {
     const confirmed = confirm(
         "Are you sure you want to delete this article?"
     );
@@ -338,15 +845,23 @@ async function deleteArticle(articleId) {
         );
 
         if (!response.ok) {
-            throw new Error("Failed to delete article");
+            throw new Error(
+                "Failed to delete article"
+            );
         }
 
-        alert("Article deleted successfully.");
+        alert(
+            "Article deleted successfully."
+        );
 
         const statusFilter =
-            document.getElementById("status-filter");
+            document.getElementById(
+                "status-filter"
+            );
 
-        loadArticles(statusFilter.value);
+        loadArticles(
+            statusFilter.value
+        );
 
         resetSelectedArticle();
 
@@ -356,7 +871,9 @@ async function deleteArticle(articleId) {
             error
         );
 
-        alert("Could not delete article.");
+        alert(
+            "Could not delete article."
+        );
     }
 }
 
@@ -364,15 +881,20 @@ async function deleteArticle(articleId) {
 // Approves and publishes an article.
 // The editor identity will be supplied
 // by server-side authentication.
-async function approveArticle(articleId) {
+async function approveArticle(
+    articleId
+) {
     try {
         const response = await fetch(
             `/api/articles/${articleId}`,
             {
                 method: "PUT",
+
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                        "application/json"
                 },
+
                 body: JSON.stringify({
                     status: "published"
                 })
@@ -380,15 +902,23 @@ async function approveArticle(articleId) {
         );
 
         if (!response.ok) {
-            throw new Error("Failed to approve article");
+            throw new Error(
+                "Failed to approve article"
+            );
         }
 
-        alert("Article approved and published.");
+        alert(
+            "Article approved and published."
+        );
 
         const statusFilter =
-            document.getElementById("status-filter");
+            document.getElementById(
+                "status-filter"
+            );
 
-        loadArticles(statusFilter.value);
+        loadArticles(
+            statusFilter.value
+        );
 
     } catch (error) {
         console.error(
@@ -396,18 +926,26 @@ async function approveArticle(articleId) {
             error
         );
 
-        alert("Could not approve article.");
+        alert(
+            "Could not approve article."
+        );
     }
 }
 
 
 // Fetches analytics data for the selected article
-async function loadAnalytics(articleId) {
+async function loadAnalytics(
+    articleId
+) {
     const message =
-        document.getElementById("analytics-message");
+        document.getElementById(
+            "analytics-message"
+        );
 
     const chartContainer =
-        document.getElementById("chart-container");
+        document.getElementById(
+            "chart-container"
+        );
 
     message.textContent =
         "Loading analytics...";
@@ -420,13 +958,17 @@ async function loadAnalytics(articleId) {
         );
 
         if (!response.ok) {
-            throw new Error("Failed to fetch analytics");
+            throw new Error(
+                "Failed to fetch analytics"
+            );
         }
 
         const analytics =
             await response.json();
 
-        renderAnalytics(analytics);
+        renderAnalytics(
+            analytics
+        );
 
     } catch (error) {
         console.error(
@@ -437,25 +979,36 @@ async function loadAnalytics(articleId) {
         message.textContent =
             "Could not load article analytics.";
 
-        chartContainer.hidden = true;
+        chartContainer.hidden =
+            true;
     }
 }
 
 
 // Displays the article view statistics as a line chart
 // together with markers for published updates
-function renderAnalytics(analytics) {
+function renderAnalytics(
+    analytics
+) {
     const message =
-        document.getElementById("analytics-message");
+        document.getElementById(
+            "analytics-message"
+        );
 
     const chartContainer =
-        document.getElementById("chart-container");
+        document.getElementById(
+            "chart-container"
+        );
 
     const canvas =
-        document.getElementById("views-chart");
+        document.getElementById(
+            "views-chart"
+        );
 
     const comparisonContainer =
-        document.getElementById("update-comparison");
+        document.getElementById(
+            "update-comparison"
+        );
 
     const views =
         analytics.views || [];
@@ -467,9 +1020,11 @@ function renderAnalytics(analytics) {
         message.textContent =
             "No view statistics are available for this article yet.";
 
-        chartContainer.hidden = true;
+        chartContainer.hidden =
+            true;
 
-        comparisonContainer.innerHTML = "";
+        comparisonContainer.textContent =
+            "";
 
         if (viewsChart) {
             viewsChart.destroy();
@@ -480,21 +1035,30 @@ function renderAnalytics(analytics) {
     }
 
     message.textContent = "";
-    chartContainer.hidden = false;
 
-    const labels = views.map((item) => {
-        const date =
-            new Date(item.timestamp);
+    chartContainer.hidden =
+        false;
 
-        return date.toLocaleString();
-    });
+    const labels =
+        views.map((item) => {
+            const date =
+                new Date(
+                    item.timestamp
+                );
 
-    const viewCounts = views.map((item) => {
-        return item.views;
-    });
+            return date.toLocaleString();
+        });
+
+    const viewCounts =
+        views.map((item) => {
+            return item.views;
+        });
 
     const updateMarkers =
-        createUpdateMarkers(views, updates);
+        createUpdateMarkers(
+            views,
+            updates
+        );
 
     if (viewsChart) {
         viewsChart.destroy();
@@ -515,12 +1079,17 @@ function renderAnalytics(analytics) {
                         tension: 0.2
                     },
                     {
-                        label: "Published update",
-                        data: updateMarkers,
-                        type: "scatter",
-                        pointStyle: "triangle",
+                        label:
+                            "Published update",
+                        data:
+                            updateMarkers,
+                        type:
+                            "scatter",
+                        pointStyle:
+                            "triangle",
                         pointRadius: 8,
-                        pointHoverRadius: 10
+                        pointHoverRadius:
+                            10
                     }
                 ]
             },
@@ -536,24 +1105,31 @@ function renderAnalytics(analytics) {
                 plugins: {
                     title: {
                         display: true,
-                        text: "Article Views Over Time"
+                        text:
+                            "Article Views Over Time"
                     },
 
                     tooltip: {
                         callbacks: {
-                            label: function (context) {
-                                if (
-                                    context.dataset.label ===
-                                    "Published update"
+                            label:
+                                function (
+                                    context
                                 ) {
-                                    const marker =
-                                        context.raw;
+                                    if (
+                                        context
+                                            .dataset
+                                            .label ===
+                                        "Published update"
+                                    ) {
+                                        const marker =
+                                            context.raw;
 
-                                    return marker.updateText;
+                                        return marker
+                                            .updateText;
+                                    }
+
+                                    return `Views: ${context.raw}`;
                                 }
-
-                                return `Views: ${context.raw}`;
-                            }
                         }
                     }
                 },
@@ -589,39 +1165,69 @@ function renderAnalytics(analytics) {
 
 // Creates a marker for each published update
 // at the closest available statistics point
-function createUpdateMarkers(views, updates) {
-    return updates.map((update) => {
-        const updateTime =
-            new Date(update.updatedAt).getTime();
+function createUpdateMarkers(
+    views,
+    updates
+) {
+    return updates.map(
+        (update) => {
+            const updateTime =
+                new Date(
+                    update.updatedAt
+                ).getTime();
 
-        let closestIndex = 0;
-        let smallestDifference = Infinity;
+            let closestIndex = 0;
 
-        views.forEach((view, index) => {
-            const viewTime =
-                new Date(view.timestamp).getTime();
+            let smallestDifference =
+                Infinity;
 
-            const difference =
-                Math.abs(viewTime - updateTime);
+            views.forEach(
+                (view, index) => {
+                    const viewTime =
+                        new Date(
+                            view.timestamp
+                        ).getTime();
 
-            if (difference < smallestDifference) {
-                smallestDifference = difference;
-                closestIndex = index;
-            }
-        });
+                    const difference =
+                        Math.abs(
+                            viewTime -
+                            updateTime
+                        );
 
-        const closestDate =
-            new Date(
-                views[closestIndex].timestamp
-            ).toLocaleString();
+                    if (
+                        difference <
+                        smallestDifference
+                    ) {
+                        smallestDifference =
+                            difference;
 
-        return {
-            x: closestDate,
-            y: views[closestIndex].views,
-            updateText:
-                update.edits || "Article published."
-        };
-    });
+                        closestIndex =
+                            index;
+                    }
+                }
+            );
+
+            const closestDate =
+                new Date(
+                    views[
+                        closestIndex
+                    ].timestamp
+                ).toLocaleString();
+
+            return {
+                x: closestDate,
+
+                y:
+                    views[
+                        closestIndex
+                    ].views,
+
+                updateText:
+                    update.edits ||
+                    "Article published."
+            };
+        }
+    );
 }
 
 
@@ -632,11 +1238,18 @@ function renderUpdateComparisons(
     updates,
     container
 ) {
-    container.innerHTML = "";
+    container.textContent = "";
 
     if (updates.length === 0) {
-        container.innerHTML =
-            "<p>No published updates are recorded for this article yet.</p>";
+        const message =
+            document.createElement("p");
+
+        message.textContent =
+            "No published updates are recorded for this article yet.";
+
+        container.appendChild(
+            message
+        );
 
         return;
     }
@@ -647,7 +1260,9 @@ function renderUpdateComparisons(
     comparisonHeading.textContent =
         "Views Before and After Updates";
 
-    container.appendChild(comparisonHeading);
+    container.appendChild(
+        comparisonHeading
+    );
 
     updates.forEach((update) => {
         const comparison =
@@ -657,15 +1272,18 @@ function renderUpdateComparisons(
             );
 
         const updateElement =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         updateElement.classList.add(
             "update-comparison-item"
         );
 
         const updateDate =
-            new Date(update.updatedAt)
-                .toLocaleString();
+            new Date(
+                update.updatedAt
+            ).toLocaleString();
 
         const difference =
             comparison.after -
@@ -679,34 +1297,92 @@ function renderUpdateComparisons(
                 `+${difference}`;
         }
 
-        updateElement.innerHTML = `
-            <h4>
-                Update: ${updateDate}
-            </h4>
+        const updateHeading =
+            document.createElement(
+                "h4"
+            );
 
-            <p>
-                <strong>Update:</strong>
-                ${update.edits || "Article published."}
-            </p>
+        updateHeading.textContent =
+            `Update: ${updateDate}`;
 
-            <p>
-                <strong>Views in the 24 hours before:</strong>
-                ${comparison.before}
-            </p>
+        const updateText =
+            createLabelledParagraph(
+                "Update: ",
+                update.edits ||
+                "Article published."
+            );
 
-            <p>
-                <strong>Views in the 24 hours after:</strong>
-                ${comparison.after}
-            </p>
+        const beforeText =
+            createLabelledParagraph(
+                "Views in the 24 hours before: ",
+                comparison.before
+            );
 
-            <p>
-                <strong>Difference:</strong>
-                ${differenceText}
-            </p>
-        `;
+        const afterText =
+            createLabelledParagraph(
+                "Views in the 24 hours after: ",
+                comparison.after
+            );
 
-        container.appendChild(updateElement);
+        const differenceElement =
+            createLabelledParagraph(
+                "Difference: ",
+                differenceText
+            );
+
+        updateElement.appendChild(
+            updateHeading
+        );
+
+        updateElement.appendChild(
+            updateText
+        );
+
+        updateElement.appendChild(
+            beforeText
+        );
+
+        updateElement.appendChild(
+            afterText
+        );
+
+        updateElement.appendChild(
+            differenceElement
+        );
+
+        container.appendChild(
+            updateElement
+        );
     });
+}
+
+
+// Creates a paragraph with a bold label
+// and a text value
+function createLabelledParagraph(
+    label,
+    value
+) {
+    const paragraph =
+        document.createElement("p");
+
+    const strong =
+        document.createElement(
+            "strong"
+        );
+
+    strong.textContent =
+        label;
+
+    paragraph.appendChild(
+        strong
+    );
+
+    paragraph.append(
+        String(value)
+    );
+
+    return paragraph;
 }
 
 
@@ -717,7 +1393,9 @@ function calculateViewsAroundUpdate(
     updateTimestamp
 ) {
     const updateTime =
-        new Date(updateTimestamp).getTime();
+        new Date(
+            updateTimestamp
+        ).getTime();
 
     const twentyFourHours =
         24 * 60 * 60 * 1000;
@@ -727,10 +1405,14 @@ function calculateViewsAroundUpdate(
 
     views.forEach((view) => {
         const viewTime =
-            new Date(view.timestamp).getTime();
+            new Date(
+                view.timestamp
+            ).getTime();
 
         if (
-            viewTime >= updateTime - twentyFourHours &&
+            viewTime >=
+            updateTime -
+            twentyFourHours &&
             viewTime < updateTime
         ) {
             before += view.views;
@@ -738,7 +1420,9 @@ function calculateViewsAroundUpdate(
 
         if (
             viewTime >= updateTime &&
-            viewTime <= updateTime + twentyFourHours
+            viewTime <=
+            updateTime +
+            twentyFourHours
         ) {
             after += view.views;
         }
@@ -755,16 +1439,24 @@ function calculateViewsAroundUpdate(
 // after an article is deleted
 function resetSelectedArticle() {
     const reviewContainer =
-        document.getElementById("review-container");
+        document.getElementById(
+            "review-container"
+        );
 
     const message =
-        document.getElementById("analytics-message");
+        document.getElementById(
+            "analytics-message"
+        );
 
     const chartContainer =
-        document.getElementById("chart-container");
+        document.getElementById(
+            "chart-container"
+        );
 
     const comparisonContainer =
-        document.getElementById("update-comparison");
+        document.getElementById(
+            "update-comparison"
+        );
 
     reviewContainer.innerHTML =
         "<p>Select an article to review it.</p>";
@@ -772,7 +1464,8 @@ function resetSelectedArticle() {
     message.textContent =
         "Select an article to view its analytics.";
 
-    comparisonContainer.innerHTML = "";
+    comparisonContainer.textContent =
+        "";
 
     chartContainer.hidden = true;
 
@@ -781,49 +1474,3 @@ function resetSelectedArticle() {
         viewsChart = null;
     }
 }
-// TEMPORARY TEST DATA - remove before commit
-document.addEventListener("DOMContentLoaded", () => {
-    renderAnalytics({
-        views: [
-            {
-                timestamp: "2026-09-27T08:00:00",
-                views: 10
-            },
-            {
-                timestamp: "2026-09-27T12:00:00",
-                views: 18
-            },
-            {
-                timestamp: "2026-09-27T16:00:00",
-                views: 25
-            },
-            {
-                timestamp: "2026-09-27T20:00:00",
-                views: 32
-            },
-            {
-                timestamp: "2026-09-28T00:00:00",
-                views: 40
-            },
-            {
-                timestamp: "2026-09-28T04:00:00",
-                views: 55
-            },
-            {
-                timestamp: "2026-09-28T08:00:00",
-                views: 70
-            },
-            {
-                timestamp: "2026-09-28T12:00:00",
-                views: 90
-            }
-        ],
-
-        updates: [
-            {
-                updatedAt: "2026-09-27T18:00:00",
-                edits: "Article published."
-            }
-        ]
-    });
-});
