@@ -934,6 +934,10 @@ async function returnArticleForCorrections(
             "Article returned for corrections."
         );
 
+        loadArticleForEditor(
+            articleId
+        );
+
         const statusFilter =
             document.getElementById(
                 "status-filter"

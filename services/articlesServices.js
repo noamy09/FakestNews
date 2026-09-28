@@ -155,7 +155,7 @@ const getArticleById = async (id) => {
 const getArticleByIdForEditor = async (id) => {
     IDValidation(id);
 
-    const article = await Article.findById(id);
+    const article = await Article.findById(id).lean(); // lean() returns plain JS objects instead of Mongoose documents (faster)
 
     if (!article) {
         throw new AppError("Article not found", 404);
