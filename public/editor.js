@@ -263,33 +263,16 @@ function renderArticleDetails(article) {
             "review-container"
         );
 
-    const title =
-        article.draft?.title ||
-        article.title ||
-        "";
-
-    const summary =
-        article.draft?.summary ||
-        article.summary ||
-        "";
-
-    const content =
-        article.draft?.content ||
-        article.content ||
-        "";
-
-    const category =
-        article.draft?.category ||
-        article.category ||
-        "";
-
-    const draftStatus =
-        article.draft?.status ||
-        "No active draft";
+    const hasDraft =
+        Boolean(article.draft);
 
     const hasPendingDraft =
         article.draft?.status ===
         "pending";
+
+    const isPublished =
+        article.status ===
+        "published";
 
     container.textContent = "";
 
@@ -300,55 +283,170 @@ function renderArticleDetails(article) {
         "editor-article-details"
     );
 
+
+    // --------------------------------------------------
+    // General article status
+    // --------------------------------------------------
+
     const heading =
         document.createElement("h3");
 
     heading.textContent =
-        "Article Details";
+        "Article Review";
 
     details.appendChild(heading);
 
-    const publicationStatus =
-        document.createElement("p");
-
-    const publicationLabel =
-        document.createElement("strong");
-
-    publicationLabel.textContent =
-        "Publication status: ";
-
-    publicationStatus.appendChild(
-        publicationLabel
-    );
-
-    publicationStatus.append(
-        article.status || "Unknown"
+    details.appendChild(
+        createLabelledParagraph(
+            "Publication status: ",
+            article.status || "Unknown"
+        )
     );
 
     details.appendChild(
-        publicationStatus
+        createLabelledParagraph(
+            "Draft status: ",
+            article.draft?.status ||
+            "No active draft"
+        )
     );
 
-    const draftStatusElement =
-        document.createElement("p");
 
-    const draftStatusLabel =
-        document.createElement("strong");
+    // --------------------------------------------------
+    // Current published version
+    // --------------------------------------------------
+    // If the article is already published and also has
+    // a draft, the editor must be able to compare the
+    // public version with the proposed update.
 
-    draftStatusLabel.textContent =
-        "Draft status: ";
+    if (isPublished && hasDraft) {
+        const publishedSection =
+            document.createElement(
+                "section"
+            );
 
-    draftStatusElement.appendChild(
-        draftStatusLabel
+        publishedSection.classList.add(
+            "published-version"
+        );
+
+        const publishedHeading =
+            document.createElement("h4");
+
+        publishedHeading.textContent =
+            "Currently Published Version";
+
+        publishedSection.appendChild(
+            publishedHeading
+        );
+
+        publishedSection.appendChild(
+            createLabelledParagraph(
+                "Title: ",
+                article.title ||
+                "Untitled article"
+            )
+        );
+
+        publishedSection.appendChild(
+            createLabelledParagraph(
+                "Category: ",
+                article.category ||
+                "No category"
+            )
+        );
+
+        publishedSection.appendChild(
+            createLabelledParagraph(
+                "Summary: ",
+                article.summary ||
+                "No summary"
+            )
+        );
+
+        const publishedContentLabel =
+            document.createElement(
+                "strong"
+            );
+
+        publishedContentLabel.textContent =
+            "Content:";
+
+        const publishedContent =
+            document.createElement("p");
+
+        publishedContent.textContent =
+            article.content ||
+            "No content";
+
+        publishedSection.appendChild(
+            publishedContentLabel
+        );
+
+        publishedSection.appendChild(
+            publishedContent
+        );
+
+        details.appendChild(
+            publishedSection
+        );
+    }
+
+
+    // --------------------------------------------------
+    // Draft / version being reviewed
+    // --------------------------------------------------
+
+    const reviewSection =
+        document.createElement("section");
+
+    reviewSection.classList.add(
+        "review-version"
     );
 
-    draftStatusElement.append(
-        draftStatus
+    const reviewHeading =
+        document.createElement("h4");
+
+    if (isPublished && hasDraft) {
+        reviewHeading.textContent =
+            "Pending Updated Version";
+    } else if (hasDraft) {
+        reviewHeading.textContent =
+            "Submitted Version";
+    } else {
+        reviewHeading.textContent =
+            "Article Content";
+    }
+
+    reviewSection.appendChild(
+        reviewHeading
     );
 
-    details.appendChild(
-        draftStatusElement
-    );
+
+    // Use the draft values when a draft exists.
+    // Otherwise show the current article values.
+
+    const title =
+        article.draft?.title ??
+        article.title ??
+        "";
+
+    const category =
+        article.draft?.category ??
+        article.category ??
+        "";
+
+    const summary =
+        article.draft?.summary ??
+        article.summary ??
+        "";
+
+    const content =
+        article.draft?.content ??
+        article.content ??
+        "";
+
+
+    // Title
 
     const titleLabel =
         document.createElement("label");
@@ -365,16 +463,20 @@ function renderArticleDetails(article) {
     titleInput.type = "text";
     titleInput.id = "edit-title";
     titleInput.value = title;
+
     titleInput.disabled =
         !hasPendingDraft;
 
-    details.appendChild(
+    reviewSection.appendChild(
         titleLabel
     );
 
-    details.appendChild(
+    reviewSection.appendChild(
         titleInput
     );
+
+
+    // Category
 
     const categoryLabel =
         document.createElement("label");
@@ -389,6 +491,7 @@ function renderArticleDetails(article) {
         document.createElement("input");
 
     categoryInput.type = "text";
+
     categoryInput.id =
         "edit-category";
 
@@ -398,13 +501,16 @@ function renderArticleDetails(article) {
     categoryInput.disabled =
         !hasPendingDraft;
 
-    details.appendChild(
+    reviewSection.appendChild(
         categoryLabel
     );
 
-    details.appendChild(
+    reviewSection.appendChild(
         categoryInput
     );
+
+
+    // Summary
 
     const summaryLabel =
         document.createElement("label");
@@ -424,18 +530,23 @@ function renderArticleDetails(article) {
         "edit-summary";
 
     summaryInput.rows = 4;
-    summaryInput.value = summary;
+
+    summaryInput.value =
+        summary;
 
     summaryInput.disabled =
         !hasPendingDraft;
 
-    details.appendChild(
+    reviewSection.appendChild(
         summaryLabel
     );
 
-    details.appendChild(
+    reviewSection.appendChild(
         summaryInput
     );
+
+
+    // Content
 
     const contentLabel =
         document.createElement("label");
@@ -455,18 +566,29 @@ function renderArticleDetails(article) {
         "edit-content";
 
     contentInput.rows = 10;
-    contentInput.value = content;
+
+    contentInput.value =
+        content;
 
     contentInput.disabled =
         !hasPendingDraft;
 
-    details.appendChild(
+    reviewSection.appendChild(
         contentLabel
     );
 
-    details.appendChild(
+    reviewSection.appendChild(
         contentInput
     );
+
+    details.appendChild(
+        reviewSection
+    );
+
+
+    // --------------------------------------------------
+    // Editor actions
+    // --------------------------------------------------
 
     const actions =
         document.createElement("div");
@@ -484,6 +606,10 @@ function renderArticleDetails(article) {
     actions.appendChild(
         actionsHeading
     );
+
+
+    // Only a pending draft may be edited,
+    // approved or returned for corrections.
 
     if (hasPendingDraft) {
         const saveButton =
@@ -512,6 +638,7 @@ function renderArticleDetails(article) {
             saveButton
         );
 
+
         const approveButton =
             document.createElement(
                 "button"
@@ -538,6 +665,7 @@ function renderArticleDetails(article) {
         actions.appendChild(
             approveButton
         );
+
 
         const noteLabel =
             document.createElement(
@@ -570,6 +698,7 @@ function renderArticleDetails(article) {
         actions.appendChild(
             noteInput
         );
+
 
         const returnButton =
             document.createElement(
@@ -609,6 +738,10 @@ function renderArticleDetails(article) {
         );
     }
 
+
+    // The editor may delete the article
+    // regardless of whether a pending draft exists.
+
     const deleteButton =
         document.createElement(
             "button"
@@ -644,7 +777,6 @@ function renderArticleDetails(article) {
         details
     );
 }
-
 
 // Saves changes made by the editor to a pending draft
 async function saveArticleChanges(
