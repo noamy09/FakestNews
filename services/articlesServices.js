@@ -150,6 +150,19 @@ const getArticleById = async (id) => {
 
     return article; //returns the updated article (with the incremented views count)
 }
+// Returns an article without increasing its view count.
+// Used by the editor when reviewing an article.
+const getArticleByIdForEditor = async (id) => {
+    IDValidation(id);
+
+    const article = await Article.findById(id);
+
+    if (!article) {
+        throw new AppError("Article not found", 404);
+    }
+
+    return article;
+};
 
 const createArticle = async (article) => {
     articleValidation(article);
@@ -262,6 +275,7 @@ const deleteArticle = async (id) => {
 module.exports = {
     getArticles,
     getArticleById,
+    getArticleByIdForEditor,
     createArticle,
     updateArticle,
     deleteArticle

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Editor Dashboard | Fakest News</title>
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <main>
+        <h1>Editor Dashboard</h1>
+
+        <section id="articles-section">
+            <h2>Articles</h2>
+            <div id="article-filters">
+                <label for="status-filter">Filter by status:</label>
+
+                <select id="status-filter">
+                    <option value="all">All</option>
+                    <option value="pending" selected>Pending approval</option>
+                    <option value="returned">Returned for corrections</option>
+                    <option value="published">Published</option>
+                </select>
+            </div>
+
+            <div id="articles-container">
+                <p>Loading articles...</p>
+            </div>
+        </section>
+
+        <section id="analytics-section">
+            <h2>Article Analytics</h2>
+
+            <div id="analytics-container">
+                <p>Select an article to view its analytics.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/editor.js"></script>
+</body>
+
+</html>

@@ -3,6 +3,7 @@ const router = express.Router();
 const controller = require('../controllers/statisticsController');
 
 router.get('/', controller.getAll);
+router.get('/article/:articleId', controller.getByArticleId);
 router.get('/:id', controller.getById);
 router.post('/', controller.create);
 router.put('/:id', controller.update);

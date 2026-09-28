@@ -8,9 +8,12 @@ const statisticsRoutes = require('./statisticsRoutes');
 const usersRoutes = require('./usersRoutes');
 const viewRoutes = require('./viewRoutes');
 const publicViewController = require('../controllers/publicViewController');
+const editorViewController = require('../controllers/editorViewController');
 
 
 router.get('/', publicViewController.renderFeed);
+// TODO: Protect this route with Editor authentication middleware
+router.get('/editor', editorViewController.renderDashboard);
 router.use('/articles', viewRoutes);
 
 router.use('/api/articles', articlesRoutes);

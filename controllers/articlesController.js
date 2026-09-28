@@ -19,7 +19,7 @@ exports.getById = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-    try{
+    try {
         const newArticle = await articleService.createArticle(req.body);
         res.status(201).json(newArticle);
     } catch (error) {
@@ -42,5 +42,20 @@ exports.delete = async (req, res) => {
         res.status(200).json(deletedArticle);
     } catch (error) {
         res.status(error.statusCode || 500).json({ message: `Error deleting article ${req.params.id}`, error: error.message });
+    }
+};
+// Returns a single article for editor review without counting a view
+exports.getByIdForEditor = async (req, res) => {
+    try {
+        const article = await articleService.getArticleByIdForEditor(
+            req.params.id
+        );
+
+        res.status(200).json(article);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            message: "Error fetching article for editor",
+            error: error.message
+        });
     }
 };
