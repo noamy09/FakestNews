@@ -257,11 +257,16 @@ const deleteArticle = async (id) => {
     return deletedArticle;
 }
 
+const getCategories = async () => {
+    return await Article.distinct('category'); // returns an array of unique category values from the DB
+}
+
 module.exports = {
     getArticles,
     getArticleById,
     createArticle,
     updateArticle,
-    deleteArticle
+    deleteArticle,
+    getCategories
 }
 

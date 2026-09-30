@@ -9,6 +9,15 @@ exports.getAll = async (req, res) => {
     }
 };
 
+exports.getCategories = async (req, res) => {
+    try {
+        const categories = await articleService.getCategories();
+        res.status(200).json(categories);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: "Error fetching categories", error: error.message });
+    }
+};
+
 exports.getById = async (req, res) => {
     try {
         const article = await articleService.getArticleById(req.params.id);
