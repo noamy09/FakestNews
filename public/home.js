@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const searchInput = document.getElementById('search-input') || document.querySelector('.filter-bar input');
     const categoryFilter = document.getElementById('category-filter') || document.querySelector('.filter-bar select:first-of-type');
-    const readStatusFilter = document.getElementById('status-filter') || document.querySelector('.filter-bar select:last-of-type');
+    const sortFilter = document.getElementById('sort-filter') || document.getElementById('sortSelect');
+    const readStatusFilter = document.getElementById('status-filter') || document.getElementById('read-filter') || document.querySelector('.filter-bar select:last-of-type');
 
     if (!articlesContainer) {
         console.error('articles-grid container not found in DOM');
@@ -24,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         statusMessage.style.display = isVisible ? 'block' : 'none';
         statusMessage.style.color = isError ? '#ef4444' : '';
     };
-
 
     const getReadArticleIds = () => {
         try {
@@ -118,9 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const categoryVal = categoryFilter ? categoryFilter.value : '';
         const searchVal = searchInput ? searchInput.value.trim() : '';
+        const sortVal = sortFilter ? sortFilter.value : 'newest';
 
         if (categoryVal && categoryVal !== 'all') query.append('category', categoryVal);
         if (searchVal) query.append('search', searchVal);
+        if (sortVal) query.append('sort', sortVal);
 
         try {
             let res = await fetch(`/api/articles?${query.toString()}`, {
@@ -200,6 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (categoryFilter) {
         categoryFilter.addEventListener('change', () => {
+            fetchArticles(true);
+        });
+    }
+
+    if (sortFilter) {
+        sortFilter.addEventListener('change', () => {
             fetchArticles(true);
         });
     }
