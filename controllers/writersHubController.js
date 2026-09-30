@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
 exports.renderHub = (req, res) => {
+    const dummyAuthorId = new mongoose.Types.ObjectId().toString();
     res.render('writersHub', {
-        writerName: 'unknown'
+        writerName: 'unknown',
+        dummyAuthorId: dummyAuthorId
     });
 };
 

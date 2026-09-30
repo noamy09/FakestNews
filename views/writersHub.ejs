@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/writersHub.css">
   <script>
     window.writerName = "<%= writerName %>";
+    window.dummyAuthorId = "<%= dummyAuthorId %>";
   </script>
   <script src="/js/writersHub.js" defer></script>
 </head>
@@ -26,19 +27,19 @@
     <div class="pillars-container">
       <div class="pillar" id="pillar-draft">
         <h2>Drafts</h2>
-        <div class="pillar-content"></div>
+        <div class="pillar-content" id="content-draft"></div>
       </div>
       <div class="pillar" id="pillar-rejected">
         <h2>Returned for Revision</h2>
-        <div class="pillar-content"></div>
+        <div class="pillar-content" id="content-rejected"></div>
       </div>
       <div class="pillar" id="pillar-pending">
         <h2>Pending (Read-only)</h2>
-        <div class="pillar-content"></div>
+        <div class="pillar-content" id="content-pending"></div>
       </div>
       <div class="pillar" id="pillar-published">
         <h2>Published</h2>
-        <div class="pillar-content"></div>
+        <div class="pillar-content" id="content-published"></div>
       </div>
     </div>
   </main>

@@ -189,7 +189,7 @@ function setupEventListeners() { // setting up event listeners for the form elem
 
     document.getElementById('btn-send-pending').addEventListener('click', async () => {
         // Validate required fields
-        if (!formElements.title.value.trim() || !formElements.category.value || !formElements.summary.value.trim() || !formElements.content.value.trim()) {
+        if (!formElements.title.value.trim() || !formElements.summary.value.trim() || !formElements.content.value.trim()) {
             alert('Please fill out all required fields before submitting to Editor.'); // alerts the user if the fields are empty, before sending to pending.
             return;
         }

@@ -1,10 +1,17 @@
-document.addEventListener('DOMContentLoaded', () => { //verification that the DOM is loaded before fetching articles
+const containers = {};
+
+document.addEventListener('DOMContentLoaded', () => {//verification that the DOM is loaded before fetching articles
+    containers.draft = document.getElementById('content-draft');
+    containers.rejected = document.getElementById('content-rejected');
+    containers.pending = document.getElementById('content-pending');
+    containers.published = document.getElementById('content-published');
+
     fetchArticles();
 });
 
-async function fetchArticles() { //fetching articles from the DB
+async function fetchArticles() {//fetching articles from the DB
     try {
-        const res = await fetch('/api/articles?limit=1000');
+        const res = await fetch(`/api/articles?author=${window.dummyAuthorId}&limit=1000`);
         const result = await res.json();
         const articles = result.data || result || [];
         
@@ -15,22 +22,17 @@ async function fetchArticles() { //fetching articles from the DB
 }
 
 function renderPillars(articles) {
-    const draftContainer = document.querySelector('#pillar-draft .pillar-content');
-    const rejectedContainer = document.querySelector('#pillar-rejected .pillar-content');
-    const pendingContainer = document.querySelector('#pillar-pending .pillar-content');
-    const publishedContainer = document.querySelector('#pillar-published .pillar-content');
-
-    draftContainer.innerHTML = '';
-    rejectedContainer.innerHTML = '';
-    pendingContainer.innerHTML = '';
-    publishedContainer.innerHTML = '';
+    containers.draft.innerHTML = '';
+    containers.rejected.innerHTML = '';
+    containers.pending.innerHTML = '';
+    containers.published.innerHTML = '';
 
     articles.forEach(article => {
         const isPublished = article.status === 'published';
         const hasDraft = article.draft && article.draft.status;
         
         if (isPublished) {
-            publishedContainer.appendChild(createArticleCard(article));
+            containers.published.appendChild(createArticleCard(article));
         }
 
         if (hasDraft) {
@@ -45,14 +47,14 @@ function renderPillars(articles) {
             };
 
             if (draftStatus === 'draft') {
-                draftContainer.appendChild(createArticleCard(draftArticle));
+                containers.draft.appendChild(createArticleCard(draftArticle));
             } else if (draftStatus === 'rejected') {
-                rejectedContainer.appendChild(createArticleCard(draftArticle));
+                containers.rejected.appendChild(createArticleCard(draftArticle));
             } else if (draftStatus === 'pending') {
-                pendingContainer.appendChild(createArticleCard(draftArticle));
+                containers.pending.appendChild(createArticleCard(draftArticle));
             }
-        } else if (!isPublished && article.status === 'unpublished') { // check if the article is not published and its status is unpublished for edge cases
-             draftContainer.appendChild(createArticleCard(article));
+        } else if (!isPublished && article.status === 'unpublished') {
+             containers.draft.appendChild(createArticleCard(article));
         }
     });
 }
@@ -62,10 +64,10 @@ function createArticleCard(article) {
     a.href = `/WritersHub/edit/${article._id}`;
     a.className = 'hub-article-card';
     
-    const date = new Date(article.updatedAt || article.createdAt).toLocaleString(); // converts the date to a readable format.
+    const date = new Date(article.updatedAt || article.createdAt).toLocaleString();
     const views = article.views || 0;
     const category = article.category || 'Uncategorized';
-    const imgUrl = article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80';
+    const imgUrl = article.imageUrl; // Schema defaults to placeholder.jpg
 
     a.innerHTML = `
         <img src="${imgUrl}" alt="${article.title}">
