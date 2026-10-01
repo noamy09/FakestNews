@@ -1,30 +1,28 @@
 const mongoose = require('mongoose');
 
+// Consistent dummy author ID for testing until full user auth is implemented
+const DUMMY_AUTHOR_ID = '60c72b2f9b1d8b0015f8a001';
+
 exports.renderHub = (req, res) => {
-    const dummyAuthorId = new mongoose.Types.ObjectId().toString();
     res.render('writersHub', {
         writerName: 'unknown',
-        dummyAuthorId: dummyAuthorId
+        dummyAuthorId: DUMMY_AUTHOR_ID
     });
 };
 
 exports.renderNewArticle = (req, res) => {
-    // Generate dummy author ID for now until users are implemented
-    const dummyAuthorId = new mongoose.Types.ObjectId().toString();
     res.render('writersHubEdit', {
         articleId: null,
         writerName: 'unknown',
-        dummyAuthorId: dummyAuthorId
+        dummyAuthorId: DUMMY_AUTHOR_ID
     });
 };
 
 exports.renderEditArticle = (req, res) => {
-    // Generate dummy author ID for now until users are implemented
-    const dummyAuthorId = new mongoose.Types.ObjectId().toString();
     res.render('writersHubEdit', {
         articleId: req.params.id,
         writerName: 'unknown',
-        dummyAuthorId: dummyAuthorId
+        dummyAuthorId: DUMMY_AUTHOR_ID
     });
 };
 

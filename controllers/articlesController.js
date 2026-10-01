@@ -20,7 +20,8 @@ exports.getCategories = async (req, res) => {
 
 exports.getById = async (req, res) => {
     try {
-        const article = await articleService.getArticleById(req.params.id);
+        const incrementViews = req.query.incrementViews !== 'false' && req.query.skipViews !== 'true'; // logic for incrementing views - so it can be toggled off at the request level
+        const article = await articleService.getArticleById(req.params.id, incrementViews);
         res.status(200).json(article);
     } catch (error) {
         res.status(error.statusCode || 500).json({ message: `Error fetching article ${req.params.id}`, error: error.message });

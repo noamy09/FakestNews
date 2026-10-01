@@ -34,7 +34,13 @@
             <select id="category">
               <option value="">Select a category</option>
             </select>
+            <button type="button" id="btn-remove-custom-category" class="btn btn-small btn-danger" style="display: none;" title="Remove custom category">✕</button>
             <button type="button" id="btn-custom-category" class="btn btn-small">Add Custom Category</button>
+          </div>
+          <div id="custom-category-container" class="custom-category-container" style="display: none;">
+            <input type="text" id="custom-category-input" placeholder="Enter new category name..." maxlength="50">
+            <button type="button" id="btn-apply-custom-category" class="btn btn-small btn-primary">Add</button>
+            <button type="button" id="btn-cancel-custom-category" class="btn btn-small">Cancel</button>
           </div>
         </div>
         

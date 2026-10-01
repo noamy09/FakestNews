@@ -10,7 +10,7 @@ const articleValidation = (article) => {
     if (!article) {
         throw new AppError("Article is null", 400);
     }
-    if (!article.title) {
+    if (article.status === 'published' && !article.title) { // verify that published articles have a title - titles are stored in draft until published.
         throw new AppError("Article title is missing", 400);
     }
     if (!article.author) {
@@ -44,7 +44,7 @@ const IDValidation = (id) => {
 
 const getArticles = async (query = {}) => {
     const filter = {};
-    const allowedFilters = ['category', 'author', 'status', 'title', 'page', 'limit', 'draft.status'];
+    const allowedFilters = ['category', 'author', 'status', 'title', 'draft.status'];
 
     let sort = { createdAt: -1 }; // default sort order is descending
 
@@ -121,7 +121,7 @@ const getArticles = async (query = {}) => {
     };
 };
 
-const getArticleById = async (id) => {
+const getArticleById = async (id, incrementViews = true) => {
     IDValidation(id);
     
     const article = await Article.findById(id).lean(); //lean() returns plain JS objects instead of Mongoose documents (faster)
@@ -130,25 +130,27 @@ const getArticleById = async (id) => {
         throw new AppError("Article not found", 404);
     }
 
-    // Optimistically increment the views count for the current request's article
-    article.views = (article.views || 0) + 1;
+    if (incrementViews) {
+        // Optimistically increment the views count for the current request's article
+        article.views = (article.views || 0) + 1;
 
-    // Track views
-    const currentHour = new Date();
-    currentHour.setUTCMinutes(0, 0, 0); // Truncate to the current UTC hour for different time zones
-    
-    Promise.all([
-        Article.updateOne({ _id: id }, { $inc: { views: 1 } }), //increments the views count for the current request's article
-        ArticleStatistics.findOneAndUpdate( //increments the views count for the current request's article in the statistics model for analitics purposes
-            { articleId: id, timestamp: currentHour },
-            { $inc: { views: 1 } },
-            { upsert: true, new: true } // creates a new statistics entry for the current request's article if the entry does not exist
-        )
-    ]).catch(err => {
-        console.error(`Failed to update statistics for article ${id}:`, err);
-    });
+        // Track views
+        const currentHour = new Date();
+        currentHour.setUTCMinutes(0, 0, 0); // Truncate to the current UTC hour for different time zones
+        
+        Promise.all([
+            Article.updateOne({ _id: id }, { $inc: { views: 1 } }), //increments the views count for the current request's article
+            ArticleStatistics.findOneAndUpdate( //increments the views count for the current request's article in the statistics model for analitics purposes
+                { articleId: id, timestamp: currentHour },
+                { $inc: { views: 1 } },
+                { upsert: true, new: true } // creates a new statistics entry for the current request's article if the entry does not exist
+            )
+        ]).catch(err => {
+            console.error(`Failed to update statistics for article ${id}:`, err);
+        });
+    }
 
-    return article; //returns the updated article (with the incremented views count)
+    return article; //returns the updated article (with the incremented views count if incrementViews is true)
 }
 
 const createArticle = async (article) => {

@@ -44,7 +44,7 @@ async function fetchCategories() {
 
 async function loadArticle(id) {
     try {
-        const res = await fetch(`/api/articles/${id}`);
+        const res = await fetch(`/api/articles/${id}?incrementViews=false`);
         const article = await res.json();
 
         let targetObj = article;
@@ -58,11 +58,13 @@ async function loadArticle(id) {
             const select = formElements.category;
             if (!Array.from(select.options).some(opt => opt.value === targetObj.category)) {
                 const opt = document.createElement('option');
+                opt.className = 'custom-category-option';
                 opt.value = targetObj.category;
                 opt.textContent = targetObj.category;
                 select.appendChild(opt);
             }
             select.value = targetObj.category;
+            updateRemoveCategoryButton();
         }
         formElements.summary.value = targetObj.summary || '';
         formElements.content.value = targetObj.content || '';
@@ -100,6 +102,28 @@ async function fetchNotes(id) {
     }
 }
 
+function updateRemoveCategoryButton() {
+    const select = formElements.category;
+    const selectedOpt = select.options[select.selectedIndex];
+    const removeBtn = document.getElementById('btn-remove-custom-category');
+    if (selectedOpt && selectedOpt.classList.contains('custom-category-option')) {
+        removeBtn.style.display = 'inline-block';
+    } else {
+        removeBtn.style.display = 'none';
+    }
+}
+
+function removeCustomCategory() {
+    const select = formElements.category;
+    const existingCustom = select.querySelector('.custom-category-option');
+    if (existingCustom) {
+        existingCustom.remove();
+    }
+    select.value = '';
+    updateRemoveCategoryButton();
+    isDirty = true;
+}
+
 function disableForm() {
     formElements.title.disabled = true;
     formElements.category.disabled = true;
@@ -107,9 +131,14 @@ function disableForm() {
     formElements.content.disabled = true;
     document.getElementById('image-upload').disabled = true;
     document.getElementById('btn-custom-category').disabled = true;
+    if (document.getElementById('btn-remove-custom-category')) document.getElementById('btn-remove-custom-category').disabled = true;
+    if (document.getElementById('custom-category-input')) document.getElementById('custom-category-input').disabled = true;
+    if (document.getElementById('btn-apply-custom-category')) document.getElementById('btn-apply-custom-category').disabled = true;
+    if (document.getElementById('btn-cancel-custom-category')) document.getElementById('btn-cancel-custom-category').disabled = true;
     if (document.getElementById('btn-remove-image')) document.getElementById('btn-remove-image').disabled = true;
     document.getElementById('btn-send-pending').disabled = true;
-    document.getElementById('btn-delete').disabled = true;
+    document.getElementById('btn-delete').disabled = false;
+    document.getElementById('btn-delete').style.display = 'inline-block';
     document.getElementById('save-status').textContent = 'Status: Pending (Read-only)';
     clearInterval(autoSaveInterval);
 }
@@ -130,17 +159,80 @@ function setupEventListeners() { // setting up event listeners for the form elem
         el.addEventListener('input', () => { isDirty = true; }); // sets dirty flag to true when user types something
     });
 
-    document.getElementById('btn-custom-category').addEventListener('click', () => { // add custom category to the custom category select element
-        const newCat = prompt("Enter new category name:");
-        if (newCat) { // if a user added a new category, it adds it to the select element and sets the dirty flag to true
-            const select = formElements.category; // gets the category select element
-            const opt = document.createElement('option'); // creates a new option element
-            opt.value = newCat; // sets the value of the new option to the new category
-            opt.textContent = newCat; // sets the text content of the new option to the new category
-            select.appendChild(opt); // appends the new option to the select element
-            select.value = newCat; // sets the value of the select element to the new category
-            isDirty = true; // sets the dirty flag to true
-        } // the end goal is to allow the writers to add a custom category to their articles, and update the categories in the DB when the article is sent to pending (in the future)
+    formElements.category.addEventListener('change', () => {
+        isDirty = true;
+        updateRemoveCategoryButton();
+    });
+
+    const customContainer = document.getElementById('custom-category-container');
+    const customInput = document.getElementById('custom-category-input');
+
+    document.getElementById('btn-custom-category').addEventListener('click', () => {
+        if (customContainer.style.display === 'none' || !customContainer.style.display) {
+            customContainer.style.display = 'flex';
+            customInput.focus();
+        } else {
+            customContainer.style.display = 'none';
+            customInput.value = '';
+        }
+    });
+
+    document.getElementById('btn-cancel-custom-category').addEventListener('click', () => {
+        customContainer.style.display = 'none';
+        customInput.value = '';
+    });
+
+    function applyCustomCategory() {
+        const newCat = customInput.value.trim();
+        if (!newCat) {
+            alert('Please enter a category name.');
+            return;
+        }
+
+        const select = formElements.category;
+
+        // Check if category already exists in standard options
+        const existingStdOption = Array.from(select.options).find(opt => opt.value.toLowerCase() === newCat.toLowerCase() && !opt.classList.contains('custom-category-option'));
+        if (existingStdOption) {
+            select.value = existingStdOption.value;
+            // remove previous custom category if present
+            const prevCustom = select.querySelector('.custom-category-option');
+            if (prevCustom) prevCustom.remove();
+        } else {
+            // Delete previous custom category if it exists
+            const prevCustom = select.querySelector('.custom-category-option');
+            if (prevCustom) {
+                prevCustom.remove();
+            }
+
+            // Add new custom category option
+            const opt = document.createElement('option');
+            opt.className = 'custom-category-option';
+            opt.value = newCat;
+            opt.textContent = newCat;
+            select.appendChild(opt);
+            select.value = newCat;
+        }
+
+        isDirty = true;
+        updateRemoveCategoryButton();
+        customContainer.style.display = 'none';
+        customInput.value = '';
+    }
+
+    document.getElementById('btn-apply-custom-category').addEventListener('click', applyCustomCategory);
+    customInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            applyCustomCategory();
+        } else if (e.key === 'Escape') {
+            customContainer.style.display = 'none';
+            customInput.value = '';
+        }
+    });
+
+    document.getElementById('btn-remove-custom-category').addEventListener('click', () => {
+        removeCustomCategory();
     });
 
     document.getElementById('image-upload').addEventListener('change', async (e) => { // upload image
@@ -194,10 +286,15 @@ function setupEventListeners() { // setting up event listeners for the form elem
             return;
         }
 
+        clearInterval(autoSaveInterval); //stops the auto-save interval before sending to pending to prevent auto-save from overriding the draft status when it's sent to pending
         currentDraftStatus = 'pending'; // changes the current draft status to pending
-        isDirty = true; // sets the dirty flag to true
-        await autoSave(); // auto saves the draft before sending it to pending
-        window.location.href = '/WritersHub'; // redirects the user to the writers hub
+        isDirty = true; // set isDirty to true to allow the autosave to run
+        const success = await autoSave(); // saves the draft before sending it to pending
+        if (success) {
+            window.location.href = '/WritersHub'; // redirects the user to the writers hub
+        } else {
+            alert('Failed to submit article for review. Please try again.');
+        }
     });
 
     document.getElementById('btn-delete').addEventListener('click', async () => {
@@ -213,7 +310,7 @@ function setupEventListeners() { // setting up event listeners for the form elem
 }
 
 async function autoSave() {
-    if (!isDirty || currentDraftStatus === 'pending') return; // return if the content hasn't been edited
+    if (!isDirty) return false; // return if the content hasn't been edited
 
     const payload = {
         title: formElements.title.value.trim(), // trimming whitespace from the title
@@ -236,14 +333,11 @@ async function autoSave() {
             });
         } else {
             // First time saving, create article
-            // For a brand new article, the API creates it with status="unpublished", draftStatus is not natively supported in POST /api/articles
-            // Wait, createArticle in articlesServices.js just saves req.body as new Article
-            // We should structure it so draft is populated.
             const createPayload = {
-                title: payload.title || 'Untitled',
+                title: '', // Root title remains blank until published/approved by an editor
                 author: window.dummyAuthorId,
                 status: 'unpublished',
-                draft: { ...payload, status: 'draft' }
+                draft: { ...payload, status: payload.draftStatus || 'draft' } // if sent to pending will be pending. If not, by default the draft status for an ew article must be sradt since iwt wa never approved until now. 
             };
             res = await fetch(`/api/articles`, {
                 method: 'POST',
@@ -253,17 +347,23 @@ async function autoSave() {
             const data = await res.json();
             if (data._id) {
                 window.articleId = data._id;
-                document.getElementById('btn-delete').style.display = 'inline-block';
+                document.getElementById('btn-delete').style.display = 'inline-block'; // show the delete button
                 // Change URL without reloading
-                window.history.replaceState({}, '', `/WritersHub/edit/${data._id}`);
+                window.history.replaceState({}, '', `/WritersHub/edit/${data._id}`); // updates the url to include the article id without reloading the page
             }
+        }
+
+        if (!res.ok) {
+            throw new Error(`Server responded with ${res.status}`);
         }
 
         isDirty = false;
         const now = new Date().toLocaleTimeString(); // gets the current time as a string (e.g. "12:00 PM")
         document.getElementById('save-status').textContent = `Last auto-saved at ${now}`; // sets the save status to the current time
+        return true;
     } catch (err) {
         console.error('Autosave failed', err); // logs the error
         document.getElementById('save-status').textContent = 'Auto-save failed!'; // sets the save status to "Auto-save failed!"
+        return false;
     }
 }
