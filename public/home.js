@@ -125,25 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sortVal) query.append('sort', sortVal);
 
         try {
-            let res = await fetch(`/api/articles?${query.toString()}`, {
+            const res = await fetch(`/?${query.toString()}`, {
                 headers: { 'Accept': 'application/json' }
             });
 
-            if (!res.ok || res.headers.get('content-type')?.includes('text/html')) {
-                res = await fetch(`/articles?${query.toString()}`, {
-                    headers: { 'Accept': 'application/json' }
-                });
-            }
-
-            const contentType = res.headers.get('content-type') || '';
-            if (!contentType.includes('application/json')) {
-                throw new Error('Server returned HTML instead of JSON API response.');
+            if (!res.ok) {
+                throw new Error(`Server returned status: ${res.status}`);
             }
 
             const result = await res.json();
-            const articles = Array.isArray(result) 
-                ? result 
-                : (result.data || result.articles || []);
+            const articles = result.articles || (Array.isArray(result) ? result : (result.data || []));
 
             if (articles.length === 0 && resetList) {
                 setStatus('No articles found.', true, false);
