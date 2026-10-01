@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Writer's Hub - Fakest News</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/css/writersHub.css">
+  <script>
+    window.writerName = "<%= writerName %>";
+    window.dummyAuthorId = "<%= dummyAuthorId %>";
+  </script>
+  <script src="/js/writersHub.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container"><a href="/" class="brand-link">📰 Fakest News</a></div>
+  </header>
+
+  <main class="hub-wrapper">
+    <div class="hub-header">
+      <h1>Writer's Hub</h1>
+      <p>Welcome, <%= writerName %></p>
+      <a href="/WritersHub/new" class="btn btn-primary create-btn">Create New Article</a>
+    </div>
+
+    <div class="pillars-container">
+      <div class="pillar" id="pillar-draft">
+        <h2>Drafts</h2>
+        <div class="pillar-content" id="content-draft"></div>
+      </div>
+      <div class="pillar" id="pillar-rejected">
+        <h2>Returned for Revision</h2>
+        <div class="pillar-content" id="content-rejected"></div>
+      </div>
+      <div class="pillar" id="pillar-pending">
+        <h2>Pending (Read-only)</h2>
+        <div class="pillar-content" id="content-pending"></div>
+      </div>
+      <div class="pillar" id="pillar-published">
+        <h2>Published</h2>
+        <div class="pillar-content" id="content-published"></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

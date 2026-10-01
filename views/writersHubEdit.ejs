@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Article - Writer's Hub</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/css/writersHub.css">
+  <script>
+    window.articleId = "<%= articleId %>";
+    window.dummyAuthorId = "<%= dummyAuthorId %>";
+  </script>
+  <script src="/js/writersHubEdit.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container"><a href="/WritersHub" class="brand-link">⬅ Back to Writer's Hub</a></div>
+  </header>
+
+  <main class="editor-wrapper">
+    <div class="editor-main">
+      <h1>Edit Article</h1>
+      <div id="save-status" class="save-status">Status: Idle</div>
+      
+      <form id="editor-form">
+        <div class="form-group">
+          <label>Article Title <span class="required" style="color: red;">*</span></label>
+          <input type="text" id="title" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Category</label>
+          <div class="category-controls">
+            <select id="category">
+              <option value="">Select a category</option>
+            </select>
+            <button type="button" id="btn-remove-custom-category" class="btn btn-small btn-danger" style="display: none;" title="Remove custom category">✕</button>
+            <button type="button" id="btn-custom-category" class="btn btn-small">Add Custom Category</button>
+          </div>
+          <div id="custom-category-container" class="custom-category-container" style="display: none;">
+            <input type="text" id="custom-category-input" placeholder="Enter new category name..." maxlength="50">
+            <button type="button" id="btn-apply-custom-category" class="btn btn-small btn-primary">Add</button>
+            <button type="button" id="btn-cancel-custom-category" class="btn btn-small">Cancel</button>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Summary <span class="required" style="color: red;">*</span></label>
+          <textarea id="summary" rows="3" required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Content <span class="required" style="color: red;">*</span></label>
+          <textarea id="content" rows="15" required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Picture</label>
+          <input type="file" id="image-upload" accept="image/*">
+          <div id="image-preview-container" style="display: none; margin-top: 10px;">
+            <img id="image-preview" src="" style="max-width: 200px; max-height: 200px; display: block; margin-bottom: 5px;">
+            <button type="button" id="btn-remove-image" class="btn btn-danger btn-small">Remove Picture</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="btn-delete" class="btn btn-danger" style="display: none;">Delete Draft</button>
+          <button type="button" id="btn-send-pending" class="btn btn-primary">Send to Pending (Submit to Editor)</button>
+        </div>
+      </form>
+    </div>
+
+    <aside class="notes-panel" id="notes-panel" style="display: none;">
+      <h2>Review Notes</h2>
+      <div id="notes-content"></div>
+    </aside>
+  </main>
+</body>
+</html>

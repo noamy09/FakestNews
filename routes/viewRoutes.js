@@ -3,6 +3,6 @@ const router = express.Router();
 const publicViewController = require('../controllers/publicViewController');
 
 router.get('/', publicViewController.renderFeed);
-router.get('/:id', publicViewController.renderArticle);
+router.get('/:id', publicViewController.renderArticlePage);
 
 module.exports = router;
