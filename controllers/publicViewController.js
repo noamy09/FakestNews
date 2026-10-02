@@ -9,6 +9,14 @@ exports.renderFeed = async (req, res, next) => {
         const search = req.query.search;
         const sort = req.query.sort || 'newest';
 
+        const filter = { status: 'published' };
+        if (category && category !== 'all' && category.trim() !== '') {
+            filter.category = category;
+        }
+        if (search && search.trim() !== '') {
+            filter.title = { $regex: search.trim(), $options: 'i' };
+        }
+
         let sortOption = { createdAt: -1 };
         if (sort === 'oldest') {
             sortOption = { createdAt: 1 };
@@ -16,25 +24,17 @@ exports.renderFeed = async (req, res, next) => {
             sortOption = { views: -1 };
         }
 
-        const result = await articlesServices.getArticles({
-            status: 'published',
-            category: category || undefined,
-            search: search || undefined,
-            sort: sortOption,
-            page,
-            limit
-        });
-
-        const articles = result.data || result || [];
+        const result = await articlesServices.getArticles(filter, sortOption, page, limit);
+        const articles = Array.isArray(result) ? result : (result?.articles || result?.data || []);
         const categories = await Article.distinct('category', { status: 'published' });
 
         if (req.xhr || req.headers.accept?.includes('application/json')) {
-            return res.json(result);
+            return res.json({ articles });
         }
 
         res.render('index', {
             articles,
-            categories,
+            categories: categories || [],
             currentCategory: category || '',
             currentSort: sort
         });
