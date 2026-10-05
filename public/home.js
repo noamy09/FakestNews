@@ -210,4 +210,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     fetchArticles(true);
+
+    // Sidebar Menu Logic
+    const roleMenuBtn = document.getElementById('role-menu-btn');
+    const sidebarMenu = document.getElementById('sidebar-menu');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+    function toggleSidebar() {
+        if (sidebarMenu && sidebarBackdrop) { // if the sidebar exists 
+            sidebarMenu.classList.toggle('open'); // toggle the open class which will trigger the css animation
+            sidebarBackdrop.classList.toggle('open'); // does the same for the backdrop 
+        }
+    }
+
+    if (roleMenuBtn) {
+        roleMenuBtn.addEventListener('click', toggleSidebar); // add event listener to the role menu button
+    }
+    
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener('click', toggleSidebar); // add event listener to the close sidebar button
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', toggleSidebar); // add event listener to the backdrop
+    }
 });

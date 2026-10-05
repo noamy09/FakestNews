@@ -225,3 +225,21 @@ button:disabled {
   margin-bottom: 15px;
   font-style: italic;
 }
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+  .hub-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .pillars-container {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .pillar {
+    min-width: 100%;
+  }
+}
