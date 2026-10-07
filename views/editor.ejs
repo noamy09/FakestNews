@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Editor Dashboard | Fakest News</title>
+
+    <!-- Shared site design -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Editor-specific design -->
+    <link rel="stylesheet" href="/css/editor.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <a href="/" class="brand-link">Fakest News</a>
+        </div>
+    </header>
+
+    <main class="editor-wrapper">
+
+        <section class="editor-heading">
+            <div>
+                <h1>Editor Dashboard</h1>
+                <p>Review, publish and analyze articles.</p>
+            </div>
+
+            <a href="/editor/analytics" class="editor-analytics-link">
+                Impact Analytics
+            </a>
+        </section>
+
+        <!-- =========================
+             ARTICLES
+        ========================== -->
+        <section class="editor-panel" id="articles-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Articles</h2>
+                    <p>Browse articles across all authors.</p>
+                </div>
+            </div>
+
+            <div class="filter-bar editor-filter-bar">
+
+                <div class="filter-controls">
+
+                    <div class="select-wrapper">
+                        <label for="status-filter">Status</label>
+
+                        <select id="status-filter">
+                            <option value="all">All statuses</option>
+                            <option value="pending" selected>
+                                Pending approval
+                            </option>
+                            <option value="rejected">
+                                Returned for revision
+                            </option>
+                            <option value="published">
+                                Published
+                            </option>
+                            <option value="draft">
+                                Draft
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="select-wrapper">
+                        <label for="category-filter">Category</label>
+
+                        <select id="category-filter">
+                            <option value="all">All categories</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="articles-container" class="editor-articles-grid">
+                <p class="loading-state">Loading articles...</p>
+            </div>
+
+        </section>
+
+        <!-- =========================
+             ARTICLE REVIEW
+        ========================== -->
+        <section class="editor-panel" id="review-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Article Review</h2>
+                    <p>
+                        Review pending articles and compare staged changes
+                        with the currently published version.
+                    </p>
+                </div>
+            </div>
+
+            <div id="review-container" class="review-container">
+                <div class="empty-state">
+                    <h3>No article selected</h3>
+                    <p>Select an article above to review it.</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- =========================
+             QUICK ANALYTICS
+        ========================== -->
+        <section class="editor-panel" id="analytics-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Impact Analytics</h2>
+                    <p>
+                        Examine article views around published editorial updates.
+                    </p>
+                </div>
+
+                <a href="/editor/analytics" class="analytics-page-link">
+                    Open Analytics Dashboard
+                </a>
+            </div>
+
+            <div id="analytics-container">
+
+                <p id="analytics-message" class="empty-state-message">
+                    Select an article to view its analytics.
+                </p>
+
+                <div id="chart-container" class="chart-container" hidden>
+
+                    <div class="chart-wrapper">
+                        <canvas id="views-chart"></canvas>
+                    </div>
+
+                    <div id="update-comparison" class="update-comparison">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/editor.js"></script>
+</body>
+
+</html>

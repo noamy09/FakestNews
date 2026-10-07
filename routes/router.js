@@ -9,9 +9,11 @@ const usersRoutes = require('./usersRoutes');
 const viewRoutes = require('./viewRoutes');
 const publicViewController = require('../controllers/publicViewController');
 const writersHubRoutes = require('./writersHubRoutes');
+const editorRoutes = require('./editorRoutes');
 
 router.get('/', publicViewController.renderFeed);
 router.use('/WritersHub', writersHubRoutes);
+router.use('/editor', editorRoutes);
 router.use('/articles', viewRoutes);
 /* Api Routes*/
 router.use('/api/articles', articlesRoutes);
