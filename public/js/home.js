@@ -26,6 +26,38 @@ document.addEventListener('DOMContentLoaded', () => {
         statusMessage.style.color = isError ? '#ef4444' : '';
     };
 
+    // Dynamic categories load
+    const loadCategories = async () => {
+        if (!categoryFilter) return;
+
+        try {
+            const res = await fetch('/articles/categories', {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (!res.ok) {
+                throw new Error(`Failed to fetch categories: ${res.status}`);
+            }
+
+            const categories = await res.json();
+
+            categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+
+            if (Array.isArray(categories)) {
+                categories.forEach((cat) => {
+                    if (cat && typeof cat === 'string') {
+                        const option = document.createElement('option');
+                        option.value = cat;
+                        option.textContent = cat;
+                        categoryFilter.appendChild(option);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading dynamic categories:', error);
+        }
+    };
+
     const getReadArticleIds = () => {
         try {
             return JSON.parse(localStorage.getItem('readArticles')) || [];
@@ -209,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    loadCategories();
     fetchArticles(true);
 
     // Sidebar Menu Logic
@@ -218,21 +251,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeSidebarBtn = document.getElementById('close-sidebar-btn');
 
     function toggleSidebar() {
-        if (sidebarMenu && sidebarBackdrop) { // if the sidebar exists 
-            sidebarMenu.classList.toggle('open'); // toggle the open class which will trigger the css animation
-            sidebarBackdrop.classList.toggle('open'); // does the same for the backdrop 
+        if (sidebarMenu && sidebarBackdrop) { 
+            sidebarMenu.classList.toggle('open'); 
+            sidebarBackdrop.classList.toggle('open'); 
         }
     }
 
     if (roleMenuBtn) {
-        roleMenuBtn.addEventListener('click', toggleSidebar); // add event listener to the role menu button
+        roleMenuBtn.addEventListener('click', toggleSidebar);
     }
     
     if (closeSidebarBtn) {
-        closeSidebarBtn.addEventListener('click', toggleSidebar); // add event listener to the close sidebar button
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
     }
 
     if (sidebarBackdrop) {
-        sidebarBackdrop.addEventListener('click', toggleSidebar); // add event listener to the backdrop
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
     }
 });

@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fakest News - Home</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
-  <script src="/home.js" defer></script>
+  <script src="/js/home.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -32,17 +32,11 @@
     <input type="text" id="search-input" placeholder="Search by title...">
   </div>
 
-  <div class="filter-controls">
-    <div class="select-wrapper">
-      <select id="category-filter">
-        <option value="">All Categories</option>
-        <option value="Politics">Politics</option>
-        <option value="Technology">Technology</option>
-        <option value="Health">Health</option>
-        <option value="Culture">Culture</option>
-        <option value="Sport">Sport</option>
-      </select>
-    </div>
+<div class="select-wrapper">
+  <select id="category-filter" aria-label="Filter by category">
+    <option value="all">All Categories</option>
+  </select>
+</div>
 
     <div class="select-wrapper">
       <select id="read-filter">
