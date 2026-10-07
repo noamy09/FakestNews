@@ -11,10 +11,12 @@ router.post('/login', controller.login);
 router.post('/logout', requireAuth, controller.logout);
 router.get('/me', requireAuth, controller.getMe);
 
-// Role-protected user management endpoints
-router.get('/', requireAuth, requireRole('editor'), controller.getAll);
+// IDOR-protected user profile endpoint (self or editor/admin)
 router.get('/:id', requireAuth, controller.getById);
-router.put('/:id', requireAuth, requireRole('editor'), controller.update);
-router.delete('/:id', requireAuth, requireRole('editor'), controller.delete);
+
+// Role-protected user management endpoints
+router.get('/', requireAuth, requireRole('editor', 'admin'), controller.getAll);
+router.put('/:id', requireAuth, controller.update); // Internal self/management check in controller
+router.delete('/:id', requireAuth, requireRole('editor', 'admin'), controller.delete);
 
 module.exports = router;

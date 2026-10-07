@@ -159,7 +159,7 @@ const createArticle = async (article) => {
     return await newArticle.save();
 }
 
-const updateArticle = async (ArticleId, articleData) => {
+const updateArticle = async (ArticleId, articleData, user = null) => {
     IDValidation(ArticleId);
     if (!articleData || typeof articleData !== "object") {
         throw new AppError("No valid changes were given", 400);
@@ -168,6 +168,21 @@ const updateArticle = async (ArticleId, articleData) => {
     const existingArticle = await Article.findById(ArticleId);
     if (!existingArticle) {
         throw new AppError("Article not found", 404);
+    }
+
+    // RBAC & Ownership Validation (Single-fetch optimized)
+    if (user) {
+        const isManagement = ["editor", "admin"].includes(user.role);
+        if (!isManagement) {
+            // Reporter ownership check
+            if (existingArticle.author && existingArticle.author.toString() !== user._id.toString()) {
+                throw new AppError("Forbidden: You can only edit your own articles", 403);
+            }
+            // Reporter status transition check: only editors can publish, archive, or return articles
+            if (articleData.status && ["published", "archived", "unpublished"].includes(articleData.status)) {
+                throw new AppError("Forbidden: Only editors can publish, return, or archive articles", 403);
+            }
+        }
     }
 
     const { updaterId, edits, _id, ...otherFields } = articleData; //extract the metadata of the update and keep sperately from the rest of the update
@@ -188,7 +203,8 @@ const updateArticle = async (ArticleId, articleData) => {
             draft: updatedDraft
         }
     } else if (otherFields.status === 'published') {
-        if (!updaterId || !mongoose.Types.ObjectId.isValid(updaterId)) {
+        const effectiveUpdaterId = updaterId || (user ? user._id : null);
+        if (!effectiveUpdaterId || !mongoose.Types.ObjectId.isValid(effectiveUpdaterId)) {
             throw new AppError("Invalid or missing Updater ID for publishing", 400);
         }
 
@@ -231,7 +247,7 @@ const updateArticle = async (ArticleId, articleData) => {
 
         updates.$push = { //pushes the new update to the updatesHistory array
             updatesHistory: {
-                updaterId: updaterId,
+                updaterId: effectiveUpdaterId,
                 updatedAt: new Date(),
                 edits: edits || "Article published."
             }
@@ -250,12 +266,28 @@ const updateArticle = async (ArticleId, articleData) => {
     return updatedArticle;
 }
 
-const deleteArticle = async (id) => {
+const deleteArticle = async (id, user = null) => {
     IDValidation(id);
-    const deletedArticle = await Article.findByIdAndDelete(id);
-    if (!deletedArticle) {
+    const existingArticle = await Article.findById(id);
+    if (!existingArticle) {
         throw new AppError("Article not found", 404);
     }
+
+    if (user) {
+        const isManagement = ["editor", "admin"].includes(user.role);
+        if (!isManagement) {
+            // Reporter ownership check
+            if (existingArticle.author && existingArticle.author.toString() !== user._id.toString()) {
+                throw new AppError("Forbidden: You can only delete your own articles", 403);
+            }
+            // Reporters can only delete draft/unpublished articles
+            if (existingArticle.status && existingArticle.status !== "unpublished") {
+                throw new AppError("Forbidden: Reporters can only delete draft/unpublished articles", 403);
+            }
+        }
+    }
+
+    const deletedArticle = await Article.findByIdAndDelete(id);
     return deletedArticle;
 }
 

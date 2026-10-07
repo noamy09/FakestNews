@@ -23,8 +23,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Role is required"],
         enum: {
-            values: ["reporter", "editor"],
-            message: "Role must be either reporter or editor"
+            values: ["reporter", "editor", "admin"],
+            message: "Role must be reporter, editor, or admin"
         }
     }
 }, {

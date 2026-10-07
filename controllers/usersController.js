@@ -2,6 +2,8 @@ const User = require("../models/User");
 const AppError = require("../utils/AppError");
 const { logSecurityEvent } = require("../middlewares/securityLogger");
 
+const ALLOWED_ROLES = ["reporter", "editor", "admin"];
+
 exports.register = async (req, res, next) => {
     try {
         const { username, email, password, role } = req.body;
@@ -10,8 +12,8 @@ exports.register = async (req, res, next) => {
             throw new AppError("Username, email, password, and role are required", 400);
         }
 
-        if (!["reporter", "editor"].includes(role)) {
-            throw new AppError("Invalid role. Role must be 'reporter' or 'editor'", 400);
+        if (!ALLOWED_ROLES.includes(role)) {
+            throw new AppError(`Invalid role. Role must be one of: ${ALLOWED_ROLES.join(", ")}`, 400);
         }
 
         const existingEmail = await User.findOne({ email });
@@ -111,6 +113,25 @@ exports.getAll = async (req, res, next) => {
 
 exports.getById = async (req, res, next) => {
     try {
+        const currentUser = req.session ? req.session.user : null;
+        if (!currentUser) {
+            logSecurityEvent("UNAUTHENTICATED_ACCESS_ATTEMPT", { endpoint: `/api/users/${req.params.id}` }, req);
+            throw new AppError("Authentication required", 401);
+        }
+
+        // IDOR Protection: Allow access if user is editor/admin, or viewing their own profile
+        const isManagement = ["editor", "admin"].includes(currentUser.role);
+        const isSelf = currentUser._id.toString() === req.params.id.toString();
+
+        if (!isManagement && !isSelf) {
+            logSecurityEvent("IDOR_ATTEMPT", {
+                userId: currentUser._id,
+                targetId: req.params.id,
+                url: req.originalUrl
+            }, req);
+            throw new AppError("Forbidden: You can only view your own profile", 403);
+        }
+
         const user = await User.findById(req.params.id);
         if (!user) {
             throw new AppError("User not found", 404);
@@ -123,10 +144,29 @@ exports.getById = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
     try {
-        const { password, ...updateData } = req.body;
-        if (updateData.role && !["reporter", "editor"].includes(updateData.role)) {
-            throw new AppError("Invalid role. Role must be 'reporter' or 'editor'", 400);
+        const currentUser = req.session ? req.session.user : null;
+        if (!currentUser) {
+            throw new AppError("Authentication required", 401);
         }
+
+        const isManagement = ["editor", "admin"].includes(currentUser.role);
+        const isSelf = currentUser._id.toString() === req.params.id.toString();
+
+        if (!isManagement && !isSelf) {
+            throw new AppError("Forbidden: You can only update your own profile", 403);
+        }
+
+        const { password, ...updateData } = req.body;
+
+        // Non-management users cannot escalate their role
+        if (updateData.role && !isManagement) {
+            throw new AppError("Forbidden: Only management can update roles", 403);
+        }
+
+        if (updateData.role && !ALLOWED_ROLES.includes(updateData.role)) {
+            throw new AppError(`Invalid role. Role must be one of: ${ALLOWED_ROLES.join(", ")}`, 400);
+        }
+
         const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
         if (!user) {
             throw new AppError("User not found", 404);
