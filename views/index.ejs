@@ -1,82 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fakest News - Home</title>
   <link rel="stylesheet" href="/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
   <script src="/home.js" defer></script>
 </head>
+
 <body>
   <header class="site-header">
     <div class="header-container">
       <a href="/" class="brand-link">📰 Fakest News</a>
-      <% 
-        // TODO: Implement RBAC. Once users are configured, uncomment this to restrict access:
-        // const hasMenuAccess = user && ['Admin', 'Editor', 'Writer', 'Reporter'].includes(user.role);
-        const hasMenuAccess = true; // Temporary bypass for now
-      %>
-      <% if (hasMenuAccess) { %>
-        <button id="role-menu-btn" class="role-menu-btn">
-          <img src="/images/editArticle.png" alt="Role Menu" class="menu-icon" />
-        </button>
-      <% } %>
+      <% // TODO: Implement RBAC. Once users are configured, uncomment this to restrict access: // const
+        hasMenuAccess=user && ['Admin', 'Editor' , 'Writer' , 'Reporter' ].includes(user.role); const
+        hasMenuAccess=true; // Temporary bypass for now %>
+        <% if (hasMenuAccess) { %>
+          <button id="role-menu-btn" class="role-menu-btn">
+            <img src="/images/editArticle.png" alt="Role Menu" class="menu-icon" />
+          </button>
+          <% } %>
     </div>
   </header>
 
   <main class="feed-wrapper">
-  <section class="filter-bar">
-  <div class="search-wrapper">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="search-input" placeholder="Search by title...">
-  </div>
+    <section class="filter-bar">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search by title...">
+      </div>
 
-  <div class="filter-controls">
-    <div class="select-wrapper">
-      <select id="category-filter">
-        <option value="">All Categories</option>
-        <option value="Politics">Politics</option>
-        <option value="Technology">Technology</option>
-        <option value="Health">Health</option>
-        <option value="Culture">Culture</option>
-        <option value="Sport">Sport</option>
-      </select>
-    </div>
+      <div class="filter-controls">
+        <div class="select-wrapper">
+          <select id="category-filter">
+            <option value="">All Categories</option>
+            <option value="Politics">Politics</option>
+            <option value="Technology">Technology</option>
+            <option value="Health">Health</option>
+            <option value="Culture">Culture</option>
+            <option value="Sport">Sport</option>
+          </select>
+        </div>
 
-    <div class="select-wrapper">
-      <select id="read-filter">
-        <option value="">All Status</option>
-        <option value="unread">Unread Only</option>
-        <option value="read">Read Only</option>
-      </select>
-    </div>
+        <div class="select-wrapper">
+          <select id="read-filter">
+            <option value="">All Status</option>
+            <option value="unread">Unread Only</option>
+            <option value="read">Read Only</option>
+          </select>
+        </div>
 
-    <div class="select-wrapper">
-      <select id="sort-filter">
-        <option value="desc">Newest First</option>
-        <option value="asc">Oldest First</option>
-        <option value="popular">Most Popular</option>
-      </select>
-    </div>
-  </div>
-</section>
+        <div class="select-wrapper">
+          <select id="sort-filter">
+            <option value="desc">Newest First</option>
+            <option value="asc">Oldest First</option>
+            <option value="popular">Most Popular</option>
+          </select>
+        </div>
+      </div>
+    </section>
 
     <section class="articles-grid" id="articles-grid">
-      <% articles.forEach(article => { %>
+      <% articles.forEach(article=> { %>
         <article class="article-card" data-id="<%= article._id %>">
-          <img src="<%= article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80' %>" alt="<%= article.title %>">
+          <img
+            src="<%= article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80' %>"
+            alt="<%= article.title %>">
           <div class="card-content">
-            <span class="badge"><%= article.category || 'General' %></span>
-            <h2><a href="/articles/view/<%= article._id %>"><%= article.title %></a></h2>
-            <p class="summary"><%= article.summary || '' %></p>
+            <span class="badge">
+              <%= article.category || 'General' %>
+            </span>
+            <h2><a href="/articles/view/<%= article._id %>">
+                <%= article.title %>
+              </a></h2>
+            <p class="summary">
+              <%= article.summary || '' %>
+            </p>
             <div class="card-meta">
               <span>By: <%= article.author ? (article.author.name || article.author.username) : 'Staff' %></span>
-              <span><%= new Date(article.createdAt).toLocaleDateString('en-US') %></span>
+              <span>
+                <%= new Date(article.createdAt).toLocaleDateString('en-US') %>
+              </span>
             </div>
           </div>
         </article>
-      <% }) %>
+        <% }) %>
     </section>
 
     <div id="scroll-sentinel" style="height: 20px;"></div>
@@ -92,11 +103,12 @@
     <nav class="sidebar-nav">
       <ul>
         <li><a href="/WritersHub">Writer's Hub</a></li>
-        <li><a href="#" class="disabled-link">Editor's Hub</a></li> // to be filled by Afik
-        <li><a href="#" class="disabled-link">Admin's Hub</a></li> // to be filled by Noam
+        <li><a href="#" class="disabled-link">Editor's Hub</a></li> // to be filled by Linoy (articles review)
+        <li><a href="#" class="disabled-link">Admin's Hub</a></li> // to be filled by Afik (user management)
       </ul>
     </nav>
   </aside>
 
 </body>
+
 </html>
