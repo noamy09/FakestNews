@@ -19,7 +19,7 @@ const articleSchema = new mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     createdAt: { type: Date, default: () => Date.now() },
     status: { type: String, enum: ["unpublished", "published", "archived"], default: "unpublished" },
-    imageUrl: { type: String, default: "/placeholder.jpg" },
+    imageUrl: { type: String, default: "/images/placeholder.jpg" },
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     views: { type: Number, default: 0 },
     draft: { type: draftSchema, default: null }, // the draft is an object that contains the current draft of the article.

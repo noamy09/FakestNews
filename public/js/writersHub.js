@@ -67,7 +67,10 @@ function createArticleCard(article) {
     const date = new Date(article.updatedAt || article.createdAt).toLocaleString();
     const views = article.views || 0;
     const category = article.category || 'Uncategorized';
-    const imgUrl = article.imageUrl; // Schema defaults to placeholder.jpg
+    let imgUrl = article.imageUrl;
+    if (!imgUrl || imgUrl === 'placeholder.jpg' || imgUrl === '/placeholder.jpg') {
+        imgUrl = '/images/placeholder.jpg';
+    }
 
     a.innerHTML = `
         <img src="${imgUrl}" alt="${article.title}">
