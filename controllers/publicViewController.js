@@ -1,5 +1,6 @@
 const articlesServices = require('../services/articlesServices');
 const Article = require('../models/articles');
+const commentsServices = require('../services/commentsServices');
 
 exports.renderFeed = async (req, res, next) => {
     try {
@@ -49,7 +50,21 @@ exports.renderArticlePage = async (req, res, next) => {
         if (!article || article.status !== 'published') {
             return res.status(404).render('error', { message: 'Article not found' });
         }
-        res.render('article', { article });
+        const [commentPage, commentCount] = await Promise.all([
+            commentsServices.getArticleComments(article._id),
+            commentsServices.countArticleComments(article._id)
+        ]);
+        res.render('article', {
+            article,
+            comments: commentPage.comments,
+            commentsHasMore: commentPage.hasMore,
+            commentsNextCursor: commentPage.nextCursor,
+            commentCount,
+            commentLimits: {
+                content: commentsServices.MAX_CONTENT_LENGTH,
+                name: commentsServices.MAX_NAME_LENGTH
+            }
+        });
     } catch (err) {
         next(err);
     }

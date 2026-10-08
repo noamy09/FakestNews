@@ -1,11 +1,19 @@
 const commentService = require("../services/commentsServices.js");
 
+const sendError = (res, error, message) => {
+    const status = error.statusCode || 500;
+    if (status >= 500) console.error(`[comments] ${message}:`, error);
+    res.status(status).json({
+        message: status >= 500 ? message : error.message
+    });
+};
+
 exports.getAll = async (req, res) => {
     try {
         const comments = await commentService.getComments(req.query);
         res.status(200).json(comments);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: "Error fetching comments", error: error.message });
+        sendError(res, error, "Error fetching comments");
     }
 };
 
@@ -14,33 +22,28 @@ exports.getById = async (req, res) => {
         const comment = await commentService.getCommentByID(req.params.id);
         res.status(200).json(comment);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error fetching commnet ${req.params.id}`, error: error.message })
+        sendError(res, error, "Error fetching comment");
     }
 };
 
-exports.create = async (req, res) => {
+exports.listForArticle = async (req, res) => {
     try {
-        const newComment = await commentService.createComment(req.body);
-        res.status(201).json(newComment);
+        const result = await commentService.getArticleComments(req.params.articleId, req.query);
+        res.status(200).json(result);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: "Error creating comment", error: error.message });
+        sendError(res, error, "Error fetching comments");
     }
 };
 
-exports.update = async (req, res) => {
+exports.createForArticle = async (req, res) => {
     try {
-        const updatedComment = await commentService.updateComment(req.params.id, req.body);
-        res.status(200).json(updatedComment);
+        const comment = await commentService.createArticleComment(
+            req.params.articleId,
+            req.body,
+            req.session?.user
+        );
+        res.status(201).json(comment);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error updating commnet ${req.params.id}`, error: error.message })
-    }
-};
-
-exports.delete = async (req, res) => {
-    try {
-        const deletedComment = await commentService.deleteComment(req.params.id);
-        res.status(200).json(deletedComment);
-    } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error deleting commnet ${req.params.id}`, error: error.message })
+        sendError(res, error, "Error creating comment");
     }
 };

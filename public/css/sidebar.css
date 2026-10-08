@@ -1,0 +1,130 @@
+.page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.public-sidebar {
+  padding: 0 24px 2rem;
+}
+
+@media (min-width: 1100px) {
+  .page-layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+
+  .public-sidebar {
+    position: sticky;
+    top: 1.5rem;
+    padding: 2rem 24px 2rem 0;
+  }
+}
+
+.weather-widget {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  color: #1e293b;
+}
+
+.weather-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0 0 0.75rem;
+}
+
+.weather-location {
+  font-weight: 600;
+  margin: 0;
+}
+
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 64px;
+}
+
+.weather-icon {
+  margin-left: -10px;
+}
+
+.weather-temp {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-desc {
+  margin: 0 0 0.75rem;
+  color: #475569;
+  text-transform: capitalize;
+}
+
+.weather-details {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.weather-details div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.weather-details dt {
+  color: #64748b;
+}
+
+.weather-details dd {
+  margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-updated,
+.weather-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.weather-error {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.weather-skeleton {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.weather-skeleton span {
+  display: block;
+  height: 0.9rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: weather-shimmer 1.4s ease-in-out infinite;
+}
+
+.weather-skeleton span:nth-child(1) { width: 55%; }
+.weather-skeleton span:nth-child(2) { width: 35%; height: 2.25rem; }
+.weather-skeleton span:nth-child(3) { width: 80%; }
+
+@keyframes weather-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-skeleton span { animation: none; }
+}
