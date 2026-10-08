@@ -3,17 +3,27 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.public-sidebar {
-  padding: 0 24px 2rem;
+/* A grid item with auto side margins (.feed-wrapper uses margin: 2rem auto) shrinks to its
+   content instead of filling the column; reset them so the feed keeps its full width. */
+.page-layout > main {
+  margin-inline: 0;
 }
 
-@media (min-width: 1100px) {
+/* Narrow screens: the sidebar would land below the infinite-scroll feed and never be seen,
+   so it moves above the content as a one-line strip (see the compact rules at the end). */
+.public-sidebar {
+  order: -1;
+  padding: 1rem 24px 0;
+}
+
+@media (min-width: 1024px) {
   .page-layout {
     grid-template-columns: minmax(0, 1fr) 300px;
     align-items: start;
   }
 
   .public-sidebar {
+    order: 0;
     position: sticky;
     top: 1.5rem;
     padding: 2rem 24px 2rem 0;
@@ -127,4 +137,77 @@
 
 @media (prefers-reduced-motion: reduce) {
   .weather-skeleton span { animation: none; }
+}
+
+/* Compact strip: "☀ 24°C · Tel Aviv, IL · clear sky" */
+@media (max-width: 1023px) {
+  .weather-widget {
+    display: flex;
+    align-items: center;
+    min-height: 3.25rem;
+    padding: 0.4rem 1rem;
+  }
+
+  /* hidden visually, still read by screen readers (the section is labelled by it) */
+  .weather-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .weather-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .weather-body[data-state="ready"] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.6rem;
+  }
+
+  .weather-main {
+    order: -1;
+    min-height: 0;
+  }
+
+  .weather-icon {
+    width: 40px;
+    height: 40px;
+    margin: -6px -4px -6px -10px;
+  }
+
+  .weather-temp {
+    font-size: 1.25rem;
+  }
+
+  .weather-location,
+  .weather-desc {
+    margin: 0;
+  }
+
+  .weather-location::before,
+  .weather-desc::before {
+    content: "·";
+    margin-inline-end: 0.6rem;
+    color: #94a3b8;
+  }
+
+  .weather-details,
+  .weather-updated {
+    display: none;
+  }
+
+  .weather-skeleton {
+    display: flex;
+    align-items: center;
+  }
+
+  .weather-skeleton span:nth-child(1) { width: 4rem; height: 1.25rem; }
+  .weather-skeleton span:nth-child(2) { width: 6rem; height: 1rem; }
+  .weather-skeleton span:nth-child(3) { width: 8rem; height: 1rem; }
 }
