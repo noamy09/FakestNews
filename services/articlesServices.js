@@ -179,7 +179,7 @@ const updateArticle = async (ArticleId, articleData, user = null) => {
                 throw new AppError("Forbidden: You can only edit your own articles", 403);
             }
             // Reporter status transition check: only editors can publish, archive, or return articles
-            if (articleData.status && ["published", "archived", "unpublished"].includes(articleData.status)) {
+            if (articleData.status && ["published", "archived"].includes(articleData.status)) {
                 throw new AppError("Forbidden: Only editors can publish, return, or archive articles", 403);
             }
         }
