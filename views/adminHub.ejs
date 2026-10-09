@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin's Hub - Fakest News</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/writersHub.css">
+  <link rel="stylesheet" href="/css/adminHub.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+  <script>
+    window.currentUserId = "<%= currentUser._id %>";
+  </script>
+  <script src="/js/adminHub.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container"><a href="/" class="brand-link">📰 Fakest News</a></div>
+  </header>
+
+  <main class="hub-wrapper">
+    <div class="hub-header">
+      <div>
+        <h1>Admin's Hub</h1>
+        <p>Welcome, <%= currentUser.username %></p>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <section class="admin-panel">
+        <h2>Create User</h2>
+        <div id="create-alert" class="admin-alert" role="status"></div>
+
+        <form id="create-user-form" autocomplete="off">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="new-password" required>
+          </div>
+          <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+              <option value="reporter">Reporter (Writer)</option>
+              <option value="editor">Editor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div id="admin-role-warning" class="admin-role-warning" role="alert" hidden>
+            <strong>⚠️ Elevated privileges</strong>
+            This account will have full Admin access, including creating and deleting any user
+            (other admins included) and changing user roles. Only grant this to fully trusted staff.
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="create-submit-btn">Create User</button>
+        </form>
+      </section>
+
+      <section class="admin-panel">
+        <h2>Users</h2>
+        <form id="search-form" class="admin-search">
+          <input type="text" id="search-input" placeholder="Search by username or email..." aria-label="Search users">
+          <select id="role-filter" aria-label="Filter by role">
+            <option value="">All Roles</option>
+            <option value="reporter">Reporter</option>
+            <option value="editor">Editor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </form>
+        <div id="users-alert" class="admin-alert" role="status"></div>
+
+        <table class="users-table">
+          <thead>
+            <tr><th>Username</th><th>Email</th><th>Role</th><th>Created</th><th></th></tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+        <p id="users-empty" class="users-empty" hidden>No users found.</p>
+      </section>
+    </div>
+  </main>
+
+  <div id="admin-confirm-modal" class="admin-modal-backdrop" hidden>
+    <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+      <h3 id="admin-modal-title">⚠️ Grant Admin privileges?</h3>
+      <p>
+        Admins have unrestricted control over the site: they can create, search and delete any user
+        account, change roles, and access every Hub. A compromised admin account puts the entire site at risk.
+      </p>
+      <div class="actions">
+        <button type="button" class="btn btn-secondary" id="admin-modal-cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="admin-modal-confirm">Yes, assign Admin</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
