@@ -24,7 +24,7 @@ if (writersHubRoutes) {
     router.use('/WritersHub', writersHubRoutes);
 }
 router.use('/AdminHub', adminHubRoutes);
-router.use('/editor', editorRoutes);
+router.use('/EditorsHub', editorRoutes);
 router.use('/articles', viewRoutes);
 
 // Auth View & Form Routes

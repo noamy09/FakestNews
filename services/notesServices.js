@@ -76,6 +76,11 @@ const deleteNote = async (id) => {
     return deletedNote;
 };
 
+const deleteNotesByArticleId = async (articleId) => {
+    IDValidation(articleId);
+    return await Note.deleteMany({ articleId });
+};
+
 module.exports = {
     getNotes,
     getNoteByID,
