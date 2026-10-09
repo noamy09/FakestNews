@@ -318,13 +318,13 @@ body {
   box-shadow: -10px 0 30px rgba(15, 23, 42, 0.15);
   transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1001;
-  display: flex;
+  display: none;
   flex-direction: column;
 }
 
 .sidebar-menu.open {
   right: 0;
-  display: flex !important;
+  display: flex; 
 }
 
 .sidebar-header {
@@ -437,4 +437,54 @@ body {
   .select-wrapper select {
     width: 100%;
   }
+}
+
+/* --- Auth Buttons & Header Actions --- */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nav-auth-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.login-btn {
+  background: #4f46e5;
+  color: #ffffff;
+  border: 1px solid transparent;
+}
+
+.login-btn:hover {
+  background: #4338ca;
+  transform: translateY(-1px);
+}
+
+.logout-btn {
+  background: transparent;
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.user-badge-info {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
 }

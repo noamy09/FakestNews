@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const articlesContainer = document.getElementById('articles-grid');
     const loadingSentinel = document.getElementById('scroll-sentinel');
-    const statusMessage = document.getElementById('loading-text');
+    const statusMessage = document.getElementById('loading-state');
 
     const searchInput = document.getElementById('search-input') || document.querySelector('.filter-bar input');
     const categoryFilter = document.getElementById('category-filter') || document.querySelector('.filter-bar select:first-of-type');
@@ -26,12 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
         statusMessage.style.color = isError ? '#ef4444' : '';
     };
 
-    // Dynamic categories load
     const loadCategories = async () => {
         if (!categoryFilter) return;
 
         try {
-            const res = await fetch('/articles/categories', {
+            const res = await fetch('/api/articles/categories', {
                 headers: { 'Accept': 'application/json' }
             });
 
@@ -82,21 +81,23 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = `article-card ${isRead ? 'read' : 'unread'}`;
         card.setAttribute('data-id', article._id);
 
-        const authorName = article.author?.name || article.author || 'Anonymous';
+        const authorName = article.author.username;
         const formattedDate = article.createdAt 
-            ? new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            ? new Date(article.createdAt).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
             : '';
 
+        const imageUrl = article.imageUrl || '/images/placeholder.jpg';
+
         card.innerHTML = `
-            <div class="article-category">${article.category || 'General'}</div>
-            <h2 class="article-title">
-                <a href="/articles/view/${article._id}" class="article-link">${article.title}</a>
-            </h2>
-            <p class="article-summary">${article.content ? article.content.substring(0, 150) + '...' : ''}</p>
-            <div class="article-meta">
-                <span class="article-author">By ${authorName}</span>
-                <span class="article-date">${formattedDate}</span>
-                <span class="article-views">${article.views || 0} views</span>
+            <img src="${imageUrl}" onerror="this.onerror=null; this.src='/images/placeholder.jpg';" alt="${article.title}">
+            <div class="card-content">
+                <span class="badge">${article.category || 'General'}</span>
+                <h2><a href="/articles/view/${article._id}" class="article-link">${article.title}</a></h2>
+                <p class="summary">${article.summary || (article.content ? article.content.substring(0, 150) + '...' : '')}</p>
+                <div class="card-meta">
+                    <span>By: ${authorName}</span>
+                    <span>${formattedDate}</span>
+                </div>
             </div>
         `;
 
@@ -113,9 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const applyReadFilter = () => {
-        const selectedFilter = readStatusFilter ? readStatusFilter.value : 'all';
+        const selectedFilter = readStatusFilter.value;
         const cards = articlesContainer.querySelectorAll('.article-card');
         const readIds = getReadArticleIds();
+
+        let visibleCount = 0;
 
         cards.forEach((card) => {
             const articleId = card.getAttribute('data-id');
@@ -123,12 +126,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (selectedFilter === 'all') {
                 card.style.display = '';
+                visibleCount++;
             } else if (selectedFilter === 'read') {
-                card.style.display = isRead ? '' : 'none';
+                const show = isRead;
+                card.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
             } else if (selectedFilter === 'unread') {
-                card.style.display = !isRead ? '' : 'none';
+                const show = !isRead;
+                card.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
             }
         });
+
+        if (visibleCount === 0) {
+            setStatus('No articles found.', true, false);
+        } else if (!hasMoreArticles) {
+            setStatus('No more articles', true, false);
+        } else {
+            setStatus('', false, false);
+        }
     };
 
     const fetchArticles = async (resetList = false) => {
@@ -190,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hasMoreArticles) {
                 currentPage += 1;
             } else if (articlesContainer.children.length > 0) {
-                setStatus('No more articles', true, false);
+                setStatus('No more articles.', true, false);
             }
         } catch (error) {
             console.error('Error fetching articles:', error);
@@ -243,29 +259,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadCategories();
     fetchArticles(true);
-
-    // Sidebar Menu Logic
-    const roleMenuBtn = document.getElementById('role-menu-btn');
-    const sidebarMenu = document.getElementById('sidebar-menu');
-    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-
-    function toggleSidebar() {
-        if (sidebarMenu && sidebarBackdrop) { 
-            sidebarMenu.classList.toggle('open'); 
-            sidebarBackdrop.classList.toggle('open'); 
-        }
-    }
-
-    if (roleMenuBtn) {
-        roleMenuBtn.addEventListener('click', toggleSidebar);
-    }
-    
-    if (closeSidebarBtn) {
-        closeSidebarBtn.addEventListener('click', toggleSidebar);
-    }
-
-    if (sidebarBackdrop) {
-        sidebarBackdrop.addEventListener('click', toggleSidebar);
-    }
 });

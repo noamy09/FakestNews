@@ -3,25 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Writer's Hub - Fakest News</title>
+  <title>Fakest News - Writer's Hub</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/writersHub.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
   <script>
-    window.writerName = "<%= writerName %>";
-    window.dummyAuthorId = "<%= dummyAuthorId %>";
+    window.currentUserId = "<%= currentUser._id %>";
   </script>
   <script src="/js/writersHub.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-container"><a href="/" class="brand-link">📰 Fakest News</a></div>
-  </header>
-
+  <%- include('partials/header') %>
   <main class="hub-wrapper">
     <div class="hub-header">
       <h1>Writer's Hub</h1>
-      <p>Welcome, <%= writerName %></p>
+      <p>Welcome, <%= currentUser.username %></p>
       <a href="/WritersHub/new" class="btn btn-primary create-btn">Create New Article</a>
     </div>
 
@@ -44,5 +40,6 @@
       </div>
     </div>
   </main>
+  <%- include('partials/sidebar') %>
 </body>
 </html>

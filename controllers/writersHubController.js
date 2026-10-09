@@ -1,33 +1,34 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
+const { logSecurityEvent } = require('../middlewares/securityLogger');
 
-// Consistent dummy author ID for testing until full user auth is implemented
-const DUMMY_AUTHOR_ID = '60c72b2f9b1d8b0015f8a001';
+exports.requireWriterPage = (req, res, next) => {
+    const user = req.session ? req.session.user : null;
+    if (!user) {
+        logSecurityEvent("UNAUTHENTICATED_ACCESS_ATTEMPT", { url: req.originalUrl }, req);
+        return res.redirect('/login');
+    }
+    next();
+};
 
 exports.renderHub = (req, res) => {
-    res.render('writersHub', {
-        writerName: 'unknown',
-        dummyAuthorId: DUMMY_AUTHOR_ID
-    });
+    res.render('writersHub', { currentUser: req.session.user });
 };
 
 exports.renderNewArticle = (req, res) => {
     res.render('writersHubEdit', {
         articleId: null,
-        writerName: 'unknown',
-        dummyAuthorId: DUMMY_AUTHOR_ID
+        currentUser: req.session.user
     });
 };
 
 exports.renderEditArticle = (req, res) => {
     res.render('writersHubEdit', {
         articleId: req.params.id,
-        writerName: 'unknown',
-        dummyAuthorId: DUMMY_AUTHOR_ID
+        currentUser: req.session.user
     });
 };
-
-const fs = require('fs');
-const path = require('path');
 
 exports.uploadImage = (req, res) => {
     try {

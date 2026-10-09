@@ -319,7 +319,7 @@ async function autoSave() {
         content: formElements.content.value.trim(), // trimming whitespace from the content
         imageUrl: currentImageUrl, // gets the image URL
         draftStatus: currentDraftStatus, // gets the draft status
-        author: window.dummyAuthorId // gets the author ID
+        author: window.currentUserId // gets the author ID
     };
 
     document.getElementById('save-status').textContent = 'Saving...'; // shows the save status
@@ -335,7 +335,7 @@ async function autoSave() {
             // First time saving, create article
             const createPayload = {
                 title: '', // Root title remains blank until published/approved by an editor
-                author: window.dummyAuthorId,
+                author: window.currentUserId,
                 status: 'unpublished',
                 draft: { ...payload, status: payload.draftStatus || 'draft' } // if sent to pending will be pending. If not, by default the draft status for an ew article must be sradt since iwt wa never approved until now. 
             };
