@@ -10,7 +10,6 @@ const viewRoutes = require('./viewRoutes');
 const publicViewController = require('../controllers/publicViewController');
 const usersController = require('../controllers/usersController');
 const adminHubRoutes = require('./adminHubRoutes');
-const articleCommentsRoutes = require('./articleCommentsRoutes');
 const weatherRoutes = require('./weatherRoutes');
 const deviceId = require('../middlewares/deviceId');
 let writersHubRoutes;
@@ -34,7 +33,6 @@ router.get('/login', (req, res) => res.render('login'));
 router.post('/login', usersController.login);
 
 /* Api Routes */
-router.use('/api/articles/:articleId/comments', articleCommentsRoutes);
 router.use('/api/articles', articlesRoutes);
 router.use('/api/weather', weatherRoutes);
 router.use('/api/comments', commentsRoutes);
