@@ -815,8 +815,9 @@ async function returnArticleForCorrections(articleId) {
 
         alert("Article returned for revision.");
 
+        selectedArticleId = null;
         await loadArticles();
-        await loadArticleForEditor(articleId);
+        resetSelectedArticle();
 
     } catch (error) {
         console.error(
@@ -869,10 +870,9 @@ async function approveArticle(articleId) {
         }
 
         alert("Article approved and published.");
-
+        selectedArticleId = null;
         await loadArticles();
-        await loadArticleForEditor(articleId);
-        await loadAnalytics(articleId);
+        resetSelectedArticle();
 
     } catch (error) {
         console.error(
