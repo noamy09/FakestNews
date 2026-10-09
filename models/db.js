@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+global.crypto = crypto;
 const mongoose = require("mongoose");
 require("dotenv").config();
 
