@@ -158,6 +158,31 @@
   color: #94a3b8;
 }
 
+/* Shown to editors/admins only */
+.comment-delete {
+  margin-left: auto;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #b91c1c;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.1rem 0.5rem;
+  cursor: pointer;
+}
+
+.comment-delete:hover:not(:disabled),
+.comment-delete:focus-visible {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.comment-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .comment-content {
   margin: 0;
   color: #334155;

@@ -16,6 +16,8 @@
   const moreBtn = document.getElementById('comments-more');
   const NAME_KEY = 'fakest_news_comment_name';
   const SUBMIT_LABEL = submitBtn.textContent;
+  // Set by the server for editors/admins only; the API checks the role again on every delete.
+  const canModerate = section.dataset.canModerate === 'true';
 
   let nextCursor = section.dataset.nextCursor || null;
   let cooldownTimer = null;
@@ -35,6 +37,15 @@
 
   const updateCharCount = () => {
     charCount.textContent = `${contentInput.value.length} / ${contentInput.maxLength}`;
+  };
+
+  const deleteButton = (authorName) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'comment-delete';
+    button.textContent = 'Delete';
+    button.setAttribute('aria-label', `Delete comment by ${authorName || 'Anonymous'}`);
+    return button;
   };
 
   // Built with textContent only, so user-supplied text can never be interpreted as HTML.
@@ -61,6 +72,7 @@
     body.textContent = content;
 
     meta.append(author, time);
+    if (canModerate && _id && !pending) meta.append(deleteButton(authorName));
     item.append(meta, body);
     return item;
   };
@@ -74,6 +86,7 @@
     const time = item.querySelector('time');
     time.dateTime = new Date(saved.createdAt).toISOString();
     time.textContent = dateFormat.format(new Date(saved.createdAt));
+    if (canModerate) item.querySelector('.comment-meta').append(deleteButton(saved.authorName));
   };
 
   const startCooldown = (seconds) => {
@@ -185,6 +198,38 @@
     } finally {
       moreBtn.disabled = false;
       moreBtn.textContent = 'Load older comments';
+    }
+  });
+
+  // One listener for every Delete button, including ones added later (new or older comments).
+  list.addEventListener('click', async (event) => {
+    const button = event.target.closest('.comment-delete');
+    if (!button) return;
+    const item = button.closest('.comment');
+    if (!item || !item.dataset.id) return;
+    if (!confirm('Delete this comment? This cannot be undone.')) return;
+
+    button.disabled = true;
+    item.classList.add('is-pending');
+    try {
+      const response = await fetch(`/api/comments/${encodeURIComponent(item.dataset.id)}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin'
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const error = new Error(data.message || 'Could not delete the comment.');
+        error.status = response.status;
+        throw error;
+      }
+      item.remove();
+      updateCount(-1);
+      setStatus('Comment deleted.', 'success');
+    } catch (error) {
+      item.classList.remove('is-pending');
+      button.disabled = false;
+      setStatus(error.status ? error.message : 'Network error. Please check your connection and try again.', 'error');
     }
   });
 

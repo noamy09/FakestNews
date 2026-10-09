@@ -47,3 +47,16 @@ exports.createForArticle = async (req, res) => {
         sendError(res, error, "Error creating comment");
     }
 };
+
+// Moderation: the route guard (requireCommentModerator) has already checked the role.
+const moderator = (req) => req.session.user.username || req.session.user._id;
+
+exports.delete = async (req, res) => {
+    try {
+        const comment = await commentService.deleteComment(req.params.id);
+        console.log(`[comments] comment ${req.params.id} on article ${comment.articleId} deleted by ${moderator(req)}`);
+        res.status(200).json(comment);
+    } catch (error) {
+        sendError(res, error, "Error deleting comment");
+    }
+};

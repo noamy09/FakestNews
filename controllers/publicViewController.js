@@ -60,6 +60,7 @@ exports.renderArticlePage = async (req, res, next) => {
             commentsHasMore: commentPage.hasMore,
             commentsNextCursor: commentPage.nextCursor,
             commentCount,
+            canModerate: commentsServices.canModerateComments(req.session?.user),
             commentLimits: {
                 content: commentsServices.MAX_CONTENT_LENGTH,
                 name: commentsServices.MAX_NAME_LENGTH

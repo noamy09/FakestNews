@@ -21,12 +21,8 @@ this Repo holds the code for a news site named FakestNews. It's a project by sev
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/articles/:articleId/comments?before=<cursor>&limit=<n>` | Public | Newest-first comments, cursor paginated (`limit` max 50; `before` is the `nextCursor` from the previous page) |
 | `POST` | `/api/articles/:articleId/comments` | Public, rate-limited | Body: `{ "authorName": "...", "content": "..." }` |
+| `DELETE` | `/api/comments/:id` | Editor/Admin | Delete a comment (the article page shows a Delete button to moderators) |
 | `GET` | `/api/weather` | Public | Cached weather for the sidebar widget |
-
-### How it works
-- **Comments** — the first 20 comments are rendered server-side in `views/article.ejs`, so they are in the initial HTML. New comments are posted with `fetch` and prepended immediately (optimistic UI); on failure the comment is removed and the typed text is restored. Comments are stored as plain text and rendered with EJS escaping / `textContent`, never as HTML, which prevents XSS. Only published articles accept comments.
-- **Spam protection** (`middlewares/commentRateLimiter.js`) — sliding window of **3 comments per minute** per device (anonymous `fn_did` cookie, issued when an article page is opened) or per logged-in user. Requests that arrive without the cookie (curl, cleared cookies) share a 3/minute bucket per IP, and every IP has a backstop of 10/minute for clients that forge fresh cookies. Violations get **HTTP 429** with a `Retry-After` header and a message; the form shows a countdown.
-- **Weather** (`services/weatherService.js`) — one in-memory cache entry with a **15-minute TTL**. Concurrent requests on a cache miss share a single API call; if OpenWeatherMap fails, the last good reading is served (marked `stale`) and retries back off for 60 s. The cache is warmed on server start.
 
 ### Quick checks
 ```bash

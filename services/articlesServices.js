@@ -1,6 +1,7 @@
 const AppError = require("../utils/AppError");
 const Article = require("../models/articles");
 const ArticleStatistics = require("../models/statistics");
+const commentsServices = require("./commentsServices");
 const mongoose = require("mongoose");
 
 // Helper functions:
@@ -256,6 +257,7 @@ const deleteArticle = async (id) => {
     if (!deletedArticle) {
         throw new AppError("Article not found", 404);
     }
+    await commentsServices.deleteArticleComments(id); // don't leave orphaned comments behind
     return deletedArticle;
 }
 

@@ -123,6 +123,28 @@ const createArticleComment = async (articleId, body, sessionUser) => {
     };
 };
 
+// Moderation (deleting any comment) is for editors and admins. Used by the route guard
+// and by the article page to decide whether to show the Delete buttons.
+const MODERATOR_ROLES = ["editor", "admin"];
+const canModerateComments = (user) => Boolean(user) && MODERATOR_ROLES.includes(String(user.role).toLowerCase());
+
+const deleteComment = async (id) => {
+    IDValidation(id);
+    const deleted = await Comment.findByIdAndDelete(id).select(PUBLIC_FIELDS).lean();
+    if (!deleted) {
+        throw new AppError("Comment not found", 404);
+    }
+    return deleted;
+};
+
+// Removes every comment of an article. Meant to be called when the article itself is deleted,
+// so it doesn't check that the article still exists. Internal only: no route exposes it.
+const deleteArticleComments = async (articleId) => {
+    IDValidation(articleId, "article");
+    const { deletedCount } = await Comment.deleteMany({ articleId });
+    return deletedCount;
+};
+
 const getComments = async (query = {}) => {
     const filter = {};
     if (query.articleId) {
@@ -156,6 +178,9 @@ module.exports = {
     getArticleComments,
     countArticleComments,
     createArticleComment,
+    deleteComment,
+    deleteArticleComments,
+    canModerateComments,
     MAX_CONTENT_LENGTH,
     MAX_NAME_LENGTH
 };
