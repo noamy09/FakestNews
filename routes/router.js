@@ -8,16 +8,32 @@ const statisticsRoutes = require('./statisticsRoutes');
 const usersRoutes = require('./usersRoutes');
 const viewRoutes = require('./viewRoutes');
 const publicViewController = require('../controllers/publicViewController');
-const writersHubRoutes = require('./writersHubRoutes');
+const usersController = require('../controllers/usersController');
+const adminHubRoutes = require('./adminHubRoutes');
 const articleCommentsRoutes = require('./articleCommentsRoutes');
 const weatherRoutes = require('./weatherRoutes');
 const deviceId = require('../middlewares/deviceId');
+let writersHubRoutes;
+try {
+    writersHubRoutes = require('./writersHubRoutes');
+} catch (e) {
+    writersHubRoutes = null;
+}
 
+// Public Feed & Hubs
 router.get('/', publicViewController.renderFeed);
-router.use('/WritersHub', writersHubRoutes);
+if (writersHubRoutes) {
+    router.use('/WritersHub', writersHubRoutes);
+}
+router.use('/AdminHub', adminHubRoutes);
 // deviceId: readers get their anti-spam cookie before they ever post a comment
 router.use('/articles', deviceId, viewRoutes);
-/* Api Routes*/
+
+// Auth View & Form Routes
+router.get('/login', (req, res) => res.render('login'));
+router.post('/login', usersController.login);
+
+/* Api Routes */
 router.use('/api/articles/:articleId/comments', articleCommentsRoutes);
 router.use('/api/articles', articlesRoutes);
 router.use('/api/weather', weatherRoutes);
