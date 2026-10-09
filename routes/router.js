@@ -11,7 +11,6 @@ const publicViewController = require('../controllers/publicViewController');
 const usersController = require('../controllers/usersController');
 const adminHubRoutes = require('./adminHubRoutes');
 const weatherRoutes = require('./weatherRoutes');
-const deviceId = require('../middlewares/deviceId');
 let writersHubRoutes;
 try {
     writersHubRoutes = require('./writersHubRoutes');
@@ -25,8 +24,7 @@ if (writersHubRoutes) {
     router.use('/WritersHub', writersHubRoutes);
 }
 router.use('/AdminHub', adminHubRoutes);
-// deviceId: readers get their anti-spam cookie before they ever post a comment
-router.use('/articles', deviceId, viewRoutes);
+router.use('/articles', viewRoutes);
 
 // Auth View & Form Routes
 router.get('/login', (req, res) => res.render('login'));

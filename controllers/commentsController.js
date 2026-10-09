@@ -1,41 +1,36 @@
 const commentService = require("../services/commentsServices.js");
+const { logSecurityEvent } = require("../middlewares/securityLogger");
 
-const sendError = (res, error, message) => {
-    const status = error.statusCode || 500;
-    if (status >= 500) console.error(`[comments] ${message}:`, error);
-    res.status(status).json({
-        message: status >= 500 ? message : error.message
-    });
-};
+// Errors go to the central error handler (middlewares/errorHandler.js) via next().
 
-exports.getAll = async (req, res) => {
+exports.getAll = async (req, res, next) => {
     try {
         const comments = await commentService.getComments(req.query);
         res.status(200).json(comments);
     } catch (error) {
-        sendError(res, error, "Error fetching comments");
+        next(error);
     }
 };
 
-exports.getById = async (req, res) => {
+exports.getById = async (req, res, next) => {
     try {
         const comment = await commentService.getCommentByID(req.params.id);
         res.status(200).json(comment);
     } catch (error) {
-        sendError(res, error, "Error fetching comment");
+        next(error);
     }
 };
 
-exports.listForArticle = async (req, res) => {
+exports.listForArticle = async (req, res, next) => {
     try {
         const result = await commentService.getArticleComments(req.params.articleId, req.query);
         res.status(200).json(result);
     } catch (error) {
-        sendError(res, error, "Error fetching comments");
+        next(error);
     }
 };
 
-exports.createForArticle = async (req, res) => {
+exports.createForArticle = async (req, res, next) => {
     try {
         const comment = await commentService.createArticleComment(
             req.params.articleId,
@@ -44,19 +39,17 @@ exports.createForArticle = async (req, res) => {
         );
         res.status(201).json(comment);
     } catch (error) {
-        sendError(res, error, "Error creating comment");
+        next(error);
     }
 };
 
-// Moderation: the route guard (requireCommentModerator) has already checked the role.
-const moderator = (req) => req.session.user.username || req.session.user._id;
-
-exports.delete = async (req, res) => {
+// Moderation: requireAuth + requireRole('editor', 'admin') have already run.
+exports.delete = async (req, res, next) => {
     try {
         const comment = await commentService.deleteComment(req.params.id);
-        console.log(`[comments] comment ${req.params.id} on article ${comment.articleId} deleted by ${moderator(req)}`);
+        logSecurityEvent("COMMENT_DELETED", { commentId: req.params.id, articleId: String(comment.articleId) }, req);
         res.status(200).json(comment);
     } catch (error) {
-        sendError(res, error, "Error deleting comment");
+        next(error);
     }
 };

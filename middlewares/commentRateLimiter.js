@@ -1,3 +1,5 @@
+const { logSecurityEvent } = require("./securityLogger");
+
 const WINDOW_MS = 60 * 1000;
 const MAX_PER_CLIENT = 3;
 // Backstop for clients that rotate device cookies to dodge the per-device limit.
@@ -5,6 +7,8 @@ const MAX_PER_IP = 10;
 
 // key -> timestamps (ms) of attempts inside the current window
 const hits = new Map();
+// key -> when its last block was logged, so a flood writes one log entry per key per window
+const loggedBlocks = new Map();
 
 const prune = (timestamps, now) => {
     while (timestamps.length && now - timestamps[0] >= WINDOW_MS) {
@@ -40,6 +44,9 @@ const sweep = setInterval(() => {
         prune(timestamps, now);
         if (!timestamps.length) hits.delete(key);
     }
+    for (const [key, loggedAt] of loggedBlocks) {
+        if (now - loggedAt >= WINDOW_MS) loggedBlocks.delete(key);
+    }
 }, WINDOW_MS);
 sweep.unref();
 
@@ -50,7 +57,12 @@ const commentRateLimiter = (req, res, next) => {
 
     if (blocked.length) {
         const retryAfter = Math.ceil(Math.max(...blocked.map((c) => c.retryAfterMs)) / 1000);
-        console.warn(`[rate-limit] comment blocked keys=${blocked.map((c) => c.key).join(",")} retryAfter=${retryAfter}s`);
+        const logKey = blocked[0].key;
+        const loggedAt = loggedBlocks.get(logKey);
+        if (loggedAt === undefined || now - loggedAt >= WINDOW_MS) {
+            loggedBlocks.set(logKey, now);
+            logSecurityEvent("COMMENT_RATE_LIMITED", { keys: blocked.map((c) => c.key), retryAfter }, req);
+        }
         res.set("Retry-After", String(retryAfter));
         return res.status(429).json({
             message: `You can post up to ${MAX_PER_CLIENT} comments per minute. Please try again in ${retryAfter} seconds.`,

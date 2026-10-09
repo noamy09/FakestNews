@@ -123,10 +123,10 @@ const createArticleComment = async (articleId, body, sessionUser) => {
     };
 };
 
-// Moderation (deleting any comment) is for editors and admins. Used by the route guard
-// and by the article page to decide whether to show the Delete buttons.
+// Moderation (deleting any comment) is for editors and admins. The article page uses this to decide
+// whether to show the Delete buttons; the DELETE route itself is guarded by requireRole('editor', 'admin').
 const MODERATOR_ROLES = ["editor", "admin"];
-const canModerateComments = (user) => Boolean(user) && MODERATOR_ROLES.includes(String(user.role).toLowerCase());
+const canModerateComments = (user) => MODERATOR_ROLES.includes(user?.role);
 
 const deleteComment = async (id) => {
     IDValidation(id);
