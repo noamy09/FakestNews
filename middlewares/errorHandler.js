@@ -1,23 +1,34 @@
-const { logSecurityEvent } = require('./securityLogger');
+const { logSecurityEvent } = require("./securityLogger");
+const Log = require("../models/Log");
 
-/**
- * Centralized error handling middleware.
- */
 const errorHandler = (err, req, res, next) => {
-    let statusCode = err.statusCode || 500;
-    let message = err.message || "Internal Server Error";
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
 
-    // Log security events for 401/403 responses
     if (statusCode === 401 || statusCode === 403) {
         logSecurityEvent("UNAUTHORIZED_OR_FORBIDDEN_ATTEMPT", {
             statusCode,
             message,
-            path: req.originalUrl,
-            user: req.session && req.session.user ? req.session.user._id : 'Unauthenticated'
+            path: req.originalUrl
         }, req);
+    } else if (statusCode === 500) {
+        console.error(err); // keep full stack trace visible in terminal during dev
+
+        Log.create({
+            level: "error",
+            event: "SERVER_ERROR",
+            message: err.message,
+            meta: {
+                userId: req?.session?.user?._id || "N/A",
+                method: req.method,
+                url: req.originalUrl,
+                details: { stack: err.stack }
+            }
+        }).catch((logErr) => console.error("[LOG WRITE FAILED]", logErr.message));
     }
 
     res.status(statusCode).json({
+        success: false,
         status: "error",
         statusCode,
         message

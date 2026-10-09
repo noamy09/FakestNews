@@ -4,7 +4,8 @@ const { logSecurityEvent } = require("../middlewares/securityLogger");
 
 const ALLOWED_ROLES = ["reporter", "editor", "admin"];
 
-exports.register = async (req, res, next) => {
+// Admin-only: create a user account from the Admin Hub (no public self-registration)
+exports.createUser = async (req, res, next) => {
     try {
         const { username, email, password, role } = req.body;
 
@@ -16,20 +17,28 @@ exports.register = async (req, res, next) => {
             throw new AppError(`Invalid role. Role must be one of: ${ALLOWED_ROLES.join(", ")}`, 400);
         }
 
-        const existingEmail = await User.findOne({ email });
+        const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
         if (existingEmail) {
             throw new AppError("Email is already registered", 400);
         }
 
-        const existingUsername = await User.findOne({ username });
+        const existingUsername = await User.findOne({ username: username.trim() });
         if (existingUsername) {
             throw new AppError("Username is already taken", 400);
         }
 
         const newUser = await User.create({ username, email, password, role });
 
-        res.status(201).json({
-            message: "User registered successfully",
+        if (role === "admin") {
+            logSecurityEvent("ADMIN_ACCOUNT_CREATED", {
+                createdBy: req.session.user._id,
+                newUserId: newUser._id.toString()
+            }, req);
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "User created successfully",
             user: newUser
         });
     } catch (error) {
@@ -66,14 +75,23 @@ exports.login = async (req, res, next) => {
             role: user.role
         };
 
-        res.status(200).json({
+        const userData = {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        };
+
+        // If standard HTML form submit without fetch/JSON Accept header
+        if (req.headers.accept && req.headers.accept.includes('text/html') && !req.xhr && !req.headers['x-requested-with']) {
+            return res.redirect('/');
+        }
+
+        return res.status(200).json({
+            success: true,
             message: "Logged in successfully",
-            user: {
-                _id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role
-            }
+            redirectUrl: "/",
+            user: userData
         });
     } catch (error) {
         next(error);
@@ -82,7 +100,7 @@ exports.login = async (req, res, next) => {
 
 exports.logout = (req, res, next) => {
     if (!req.session) {
-        return res.status(200).json({ message: "Logged out successfully" });
+        return res.status(200).json({ success: true, message: "Logged out successfully" });
     }
 
     req.session.destroy((err) => {
@@ -90,7 +108,7 @@ exports.logout = (req, res, next) => {
             return next(new AppError("Failed to log out", 500));
         }
         res.clearCookie("connect.sid");
-        res.status(200).json({ message: "Logged out successfully" });
+        res.status(200).json({ success: true, message: "Logged out successfully" });
     });
 };
 
@@ -99,12 +117,30 @@ exports.getMe = (req, res, next) => {
         logSecurityEvent("UNAUTHORIZED_ACCESS", { endpoint: "/api/users/me" }, req);
         return next(new AppError("Authentication required", 401));
     }
-    res.status(200).json({ user: req.session.user });
+    res.status(200).json({ success: true, user: req.session.user });
 };
+
+// Escape user input so it is matched literally inside a RegExp
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 exports.getAll = async (req, res, next) => {
     try {
-        const users = await User.find();
+        const { q, role } = req.query;
+        const filter = {};
+
+        if (typeof q === "string" && q.trim()) {
+            const pattern = new RegExp(escapeRegex(q.trim()), "i");
+            filter.$or = [{ username: pattern }, { email: pattern }];
+        }
+
+        if (typeof role === "string" && role) {
+            if (!ALLOWED_ROLES.includes(role)) {
+                throw new AppError(`Invalid role. Role must be one of: ${ALLOWED_ROLES.join(", ")}`, 400);
+            }
+            filter.role = role;
+        }
+
+        const users = await User.find(filter).sort({ createdAt: -1 });
         res.status(200).json(users);
     } catch (error) {
         next(error);
@@ -158,9 +194,9 @@ exports.update = async (req, res, next) => {
 
         const { password, ...updateData } = req.body;
 
-        // Non-management users cannot escalate their role
-        if (updateData.role && !isManagement) {
-            throw new AppError("Forbidden: Only management can update roles", 403);
+        // Only admins can change roles (prevents editors from escalating anyone to admin)
+        if (updateData.role && currentUser.role !== "admin") {
+            throw new AppError("Forbidden: Only admins can update roles", 403);
         }
 
         if (updateData.role && !ALLOWED_ROLES.includes(updateData.role)) {
@@ -179,11 +215,16 @@ exports.update = async (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
     try {
+        // Prevent an admin from locking themselves out by deleting their own account
+        if (req.session.user._id.toString() === req.params.id.toString()) {
+            throw new AppError("You cannot delete your own account", 400);
+        }
+
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             throw new AppError("User not found", 404);
         }
-        res.status(200).json({ message: "User deleted successfully" });
+        res.status(200).json({ success: true, message: "User deleted successfully" });
     } catch (error) {
         next(error);
     }

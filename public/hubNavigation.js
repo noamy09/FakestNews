@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (userSection) {
                 userSection.innerHTML = `
-                    <a href="/login" class="nav-btn login-btn" style="display: block; text-align: center; margin-top: 1rem;">🔑 Login</a>
+                    <a href="/login" class="nav-btn login-btn" style="display: block; text-align: center; margin-top: 1rem; text-decoration: none; padding: 0.6rem; background: #3b82f6; color: #ffffff; border-radius: 8px; font-weight: 600; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);">🔑 Sign In / Login</a>
                 `;
             }
             return;
