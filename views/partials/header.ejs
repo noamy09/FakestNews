@@ -1,12 +1,18 @@
+<!-- Site main header -->
 <header class="site-header">
   <div class="header-container">
+    <!-- Brand link to home page -->
     <a href="/" class="brand-link">📰 Fakest News</a>
     
+    <!-- Dynamic action buttons container (fades in after auth check) -->
     <div class="header-actions" id="header-actions" style="opacity: 0; transition: opacity 0.15s ease;">
+      <!-- Login button for guest users -->
       <a href="/login" id="header-login-btn" class="nav-auth-btn login-btn">Login</a>
+      <!-- Sidebar hub menu toggle for authenticated users -->
       <button type="button" id="role-menu-btn" class="role-menu-btn" style="display: none;" aria-label="Open Hub Menu">
         <img src="/images/editArticle.png" alt="Role Menu" class="menu-icon" />
       </button>
+      <!-- Logout action button -->
       <button type="button" id="header-logout-btn" class="nav-auth-btn logout-btn" style="display: none;">Logout</button>
     </div>
   </div>

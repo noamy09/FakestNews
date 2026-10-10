@@ -3,6 +3,7 @@ const AppError = require("../utils/AppError");
 const { logSecurityEvent } = require("../middlewares/securityLogger");
 
 const ALLOWED_ROLES = ["reporter", "editor", "admin"];
+const UPDATABLE_FIELDS = ["username", "email", "role"];
 
 // Admin-only: create a user account from the Admin Hub (no public self-registration)
 exports.createUser = async (req, res, next) => {
@@ -192,10 +193,22 @@ exports.update = async (req, res, next) => {
             throw new AppError("Forbidden: You can only update your own profile", 403);
         }
 
-        const { password, ...updateData } = req.body;
+        // Whitelist editable fields (password changes and internal fields are never accepted here)
+        const updateData = {};
+        for (const field of UPDATABLE_FIELDS) {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        }
 
         // Only admins can change roles (prevents editors from escalating anyone to admin)
         if (updateData.role && currentUser.role !== "admin") {
+            logSecurityEvent("FORBIDDEN_ROLE_CHANGE_ATTEMPT", {
+                actorId: currentUser._id,
+                actorRole: currentUser.role,
+                targetId: req.params.id,
+                attemptedRole: updateData.role
+            }, req);
             throw new AppError("Forbidden: Only admins can update roles", 403);
         }
 
@@ -203,10 +216,41 @@ exports.update = async (req, res, next) => {
             throw new AppError(`Invalid role. Role must be one of: ${ALLOWED_ROLES.join(", ")}`, 400);
         }
 
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) {
+            throw new AppError("User not found", 404);
+        }
+
+        // Only administrators can modify other users. Non-admins can only modify their own profile.
+        if (currentUser.role !== "admin" && !isSelf) {
+            logSecurityEvent("FORBIDDEN_USER_MODIFICATION_ATTEMPT", {
+                actorId: currentUser._id,
+                actorRole: currentUser.role,
+                targetId: targetUser._id.toString(),
+                targetRole: targetUser.role,
+                attemptedFields: Object.keys(updateData)
+            }, req);
+            throw new AppError("Forbidden: Only administrators can modify other users' accounts", 403);
+        }
+
+        const oldRole = targetUser.role;
+
         const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
         if (!user) {
             throw new AppError("User not found", 404);
         }
+
+        if (updateData.role && oldRole !== user.role) {
+            logSecurityEvent("USER_ROLE_CHANGED", {
+                actorId: currentUser._id,
+                actorUsername: currentUser.username,
+                targetId: user._id.toString(),
+                targetUsername: user.username,
+                oldRole,
+                newRole: user.role
+            }, req);
+        }
+
         res.status(200).json(user);
     } catch (error) {
         next(error);
@@ -224,6 +268,31 @@ exports.delete = async (req, res, next) => {
         if (!user) {
             throw new AppError("User not found", 404);
         }
+
+        // Destroy all active sessions for this deleted user ---
+        const targetUserId = user._id.toString();
+        req.sessionStore.all((err, sessions) => {
+            if (!err && sessions) {
+                for (const sessionId in sessions) {
+                    const session = sessions[sessionId];
+                    if (session && session.user && session.user._id && session.user._id.toString() === targetUserId) {
+                        req.sessionStore.destroy(sessionId, (destroyErr) => {
+                            if (destroyErr) console.error("Failed to destroy session on user deletion:", destroyErr);
+                        });
+                    }
+                }
+            }
+        });
+
+        logSecurityEvent("USER_DELETED", {
+            actorId: req.session.user._id,
+            actorUsername: req.session.user.username,
+            targetId: targetUserId,
+            targetUsername: user.username,
+            targetEmail: user.email,
+            targetRole: user.role
+        }, req);
+
         res.status(200).json({ success: true, message: "User deleted successfully" });
     } catch (error) {
         next(error);

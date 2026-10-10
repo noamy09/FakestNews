@@ -1,13 +1,18 @@
+<!-- Dark overlay backdrop for sidebar dismissal -->
   <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
+  <!-- Off-canvas sidebar navigation drawer -->
   <aside id="sidebar-menu" class="sidebar-menu">
     <div class="sidebar-header">
       <h2>Hub Menu</h2>
+      <!-- Dismiss button -->
       <button type="button" id="close-sidebar-btn" class="close-sidebar-btn">&times;</button>
     </div>
     <nav class="sidebar-nav">
+      <!-- Active user role badge and username display -->
       <div id="hub-user-info" class="user-badge-info" style="display: none;"></div>
 
+      <!-- Role-based hub navigation links -->
       <ul id="hub-links-list">
         <li id="item-writer-hub" style="display: none;"><a href="/WritersHub">Writer's Hub</a></li>
         <li id="item-editor-hub" style="display: none;"><a href="/EditorsHub">Editor's Hub</a></li>
@@ -16,4 +21,5 @@
     </nav>
   </aside>
 
+  <!-- Client-side navigation script -->
   <script src="/js/hubNavigation.js"></script>

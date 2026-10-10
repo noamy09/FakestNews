@@ -3,36 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Dynamic page title and SEO meta tags -->
   <title><%= article.title %> - Fakest News</title>
   <meta name="description" content="<%= article.summary || article.title %>">
-  <meta name="author" content="<%= article.author ? (article.author.name || article.author.username) : 'Staff' %>">
+  <meta name="author" content="<%= article.author.username %>">
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/comments.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-container"><a href="/" class="brand-link">📰 Fakest News</a></div>
-  </header>
+  <!-- Header navigation partial -->
+  <%- include('partials/header') %>
 
+  <!-- Main single article layout container -->
   <main class="single-article-container">
     <article class="full-article">
+      <!-- Article title, category badge, and metadata -->
       <header class="article-header">
         <span class="badge"><%= article.category %></span>
         <h1><%= article.title %></h1>
         <div class="meta-row">
-          <span>By <strong><%= article.author ? (article.author.name || article.author.username) : 'Staff' %></strong></span>
+          <span>By: <%= article.author.username %></span>
           <span>Published on <%= new Date(article.createdAt).toLocaleDateString('en-US') %></span>
           <span>Views: <%= article.views || 1 %></span>
         </div>
       </header>
 
+      <!-- Featured image banner with error fallback -->
       <% if (article.imageUrl) { %>
         <figure class="featured-media">
-          <img src="<%= article.imageUrl %>" alt="<%= article.title %>">
+          <img 
+            src="<%= article.imageUrl %>" 
+            alt="<%= article.title %>"
+            style="width: 100%; max-height: 480px; object-fit: contain; background-color: #f8fafc;"
+            onerror="this.onerror=null; this.src='/images/placeholder.jpg';"
+          >
         </figure>
       <% } %>
 
+      <!-- Render formatted article body content -->
       <div class="article-body">
         <%- article.content %>
       </div>
@@ -88,6 +98,7 @@
     </section>
   </main>
 
+  <!-- Track viewed article ID in localStorage -->
   <script>
     (function() {
       const articleId = "<%= article._id %>";
@@ -99,5 +110,7 @@
     })();
   </script>
   <script src="/js/comments.js" defer></script>
+  <!-- Off-canvas sidebar navigation partial -->
+  <%- include('partials/sidebar') %>
 </body>
 </html>
