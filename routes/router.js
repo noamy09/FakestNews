@@ -17,7 +17,7 @@ const writersHubRoutes = require('./writersHubRoutes');
 router.get('/', publicViewController.renderFeed);
 router.use('/WritersHub', writersHubRoutes);
 router.use('/AdminHub', adminHubRoutes);
-router.use('/EditorsHub', editorRoutes);
+router.use('/EditorHub', editorRoutes);
 router.use('/articles', viewRoutes);
 
 // Auth View & Form Routes
