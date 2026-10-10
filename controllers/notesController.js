@@ -20,7 +20,11 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
     try {
-        const newNote = await NoteService.createNote(req.body);
+        const noteData = { ...req.body };
+        if (!noteData.author && req.session && req.session.user) {
+            noteData.author = req.session.user._id;
+        }
+        const newNote = await NoteService.createNote(noteData);
         res.status(201).json(newNote);
     } catch (error) {
         res.status(error.statusCode || 500).json({ message: "Error creating note", error: error.message });
