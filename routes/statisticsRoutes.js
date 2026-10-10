@@ -1,11 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const controller = require('../controllers/statisticsController');
+const express = require("express");
 
-router.get('/', controller.getAll);
-router.get('/:id', controller.getById);
-router.post('/', controller.create);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.delete);
+const router = express.Router();
+
+const controller = require(
+    "../controllers/statisticsController"
+);
+
+// Returns analytics data for a specific article
+router.get(
+    "/article/:articleId",
+    controller.getByArticleId
+);
 
 module.exports = router;

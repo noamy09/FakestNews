@@ -10,6 +10,7 @@ const viewRoutes = require('./viewRoutes');
 const publicViewController = require('../controllers/publicViewController');
 const usersController = require('../controllers/usersController');
 const adminHubRoutes = require('./adminHubRoutes');
+const editorRoutes = require('./editorRoutes');
 let writersHubRoutes;
 try {
     writersHubRoutes = require('./writersHubRoutes');
@@ -23,6 +24,7 @@ if (writersHubRoutes) {
     router.use('/WritersHub', writersHubRoutes);
 }
 router.use('/AdminHub', adminHubRoutes);
+router.use('/EditorsHub', editorRoutes);
 router.use('/articles', viewRoutes);
 
 // Auth View & Form Routes
