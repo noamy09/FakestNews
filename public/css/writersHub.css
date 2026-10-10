@@ -192,13 +192,83 @@
   border: 1.5px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   box-sizing: border-box;
+  align-self: flex-start;
+  position: sticky;
+  top: 24px;
 }
 
-.notes-panel h3 {
+.notes-panel h2 {
   margin-top: 0;
+  margin-bottom: 16px;
   color: #0f172a;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.note-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid #f59e0b;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.note-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.note-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.note-author {
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.note-time {
+  color: var(--text-muted);
+}
+
+.note-card-content {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.no-notes-message {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 12px;
+  text-align: center;
+}
+
+.status-badge.status-rejected {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #fef3c7;
+  color: #b45309;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .form-group {

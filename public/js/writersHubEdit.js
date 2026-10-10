@@ -79,6 +79,7 @@ async function loadArticle(id) {
         }
 
         if (currentDraftStatus === 'rejected') {
+            document.getElementById('save-status').innerHTML = 'Status: <span class="status-badge status-rejected">Returned for Revision</span>';
             await fetchNotes(id);
         }
     } catch (err) {
@@ -86,16 +87,44 @@ async function loadArticle(id) {
     }
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 async function fetchNotes(id) {
     try {
-        const res = await fetch(`/api/notes?articleId=${id}`);
+        const res = await fetch(`/api/notes?articleId=${id}&limit=100`);
         const notes = await res.json();
         const notesPanel = document.getElementById('notes-panel');
         const notesContent = document.getElementById('notes-content');
 
-        if (notes && notes.length > 0) {
-            notesPanel.style.display = 'block';
-            notesContent.innerHTML = notes.map(n => `<div style="margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:10px;"><strong>${new Date(n.createdAt).toLocaleDateString()}</strong><br>${n.content}</div>`).join('');
+        if (!notesPanel || !notesContent) return;
+
+        notesPanel.style.display = 'block';
+
+        if (Array.isArray(notes) && notes.length > 0) {
+            notesContent.innerHTML = notes.map(n => {
+                const authorName = (n.author && (n.author.username || n.author.name)) || 'Editor';
+                const roleBadge = n.author && n.author.role ? ` (${n.author.role})` : '';
+                const dateObj = new Date(n.createdAt);
+                const dateStr = dateObj.toLocaleDateString();
+                const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                return `
+                    <div class="note-card">
+                        <div class="note-card-header">
+                            <span class="note-author">📝 ${escapeHtml(authorName)}${escapeHtml(roleBadge)}</span>
+                            <span class="note-time">${dateStr} ${timeStr}</span>
+                        </div>
+                        <div class="note-card-content">${escapeHtml(n.content)}</div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            notesContent.innerHTML = '<div class="no-notes-message">No revision notes recorded yet.</div>';
         }
     } catch (err) {
         console.error('Error fetching notes', err);
@@ -359,7 +388,11 @@ async function autoSave() {
 
         isDirty = false;
         const now = new Date().toLocaleTimeString(); // gets the current time as a string (e.g. "12:00 PM")
-        document.getElementById('save-status').textContent = `Last auto-saved at ${now}`; // sets the save status to the current time
+        if (currentDraftStatus === 'rejected') {
+            document.getElementById('save-status').innerHTML = `Status: <span class="status-badge status-rejected">Returned for Revision</span> (Last auto-saved at ${now})`;
+        } else {
+            document.getElementById('save-status').textContent = `Last auto-saved at ${now}`;
+        }
         return true;
     } catch (err) {
         console.error('Autosave failed', err); // logs the error

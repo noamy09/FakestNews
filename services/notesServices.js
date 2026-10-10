@@ -37,7 +37,11 @@ const getNotes = async (query = {}) => {
     const limit = parseInt(query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    return await Note.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
+    return await Note.find(filter)
+        .populate('author', 'username email role')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
 };
 
 const getNoteByID = async (id) => {
@@ -86,5 +90,6 @@ module.exports = {
     getNoteByID,
     createNote,
     updateNote,
-    deleteNote
+    deleteNote,
+    deleteNotesByArticleId
 };

@@ -1,6 +1,7 @@
 const AppError = require("../utils/AppError");
 const Article = require("../models/articles");
 const ArticleStatistics = require("../models/statistics");
+const notesServices = require("./notesServices");
 const mongoose = require("mongoose");
 
 // Helper functions:
@@ -187,6 +188,22 @@ const updateArticle = async (ArticleId, articleData, user = null) => {
 
     const { updaterId, edits, _id, ...otherFields } = articleData; //extract the metadata of the update and keep sperately from the rest of the update
 
+    // Persist review note if provided (e.g. when an editor returns an article for revision)
+    if (otherFields.editorNote && typeof otherFields.editorNote === 'string' && otherFields.editorNote.trim()) {
+        const noteAuthor = (user && user._id) || updaterId || existingArticle.author;
+        if (noteAuthor) {
+            try {
+                await notesServices.createNote({
+                    articleId: ArticleId,
+                    content: otherFields.editorNote.trim(),
+                    author: noteAuthor
+                });
+            } catch (noteErr) {
+                console.error(`Failed to record review note for article ${ArticleId}:`, noteErr);
+            }
+        }
+    }
+
     const updates = {};
 
     if (otherFields.draftStatus) {
@@ -288,6 +305,13 @@ const deleteArticle = async (id, user = null) => {
     }
 
     const deletedArticle = await Article.findByIdAndDelete(id);
+    if (deletedArticle) {
+        try {
+            await notesServices.deleteNotesByArticleId(id);
+        } catch (err) {
+            console.error(`Failed to delete notes for article ${id}:`, err);
+        }
+    }
     return deletedArticle;
 }
 
