@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/notesController');
-const { requireAuth, requireRole } = require('../middlewares/auth');
 
 router.get('/', controller.getAll);
 router.get('/:id', controller.getById);
-router.post('/', requireAuth, requireRole('editor', 'admin'), controller.create);
-router.put('/:id', requireAuth, requireRole('editor', 'admin'), controller.update);
-router.delete('/:id', requireAuth, requireRole('editor', 'admin'), controller.delete);
+router.post('/', controller.create);
+router.put('/:id', controller.update);
+router.delete('/:id', controller.delete);
 
 module.exports = router;
