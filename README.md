@@ -14,7 +14,7 @@ this Repo holds the code for a news site named FakestNews. It's a project by sev
 | Variable | Purpose |
 | :--- | :--- |
 | `OPENWEATHER_API_KEY` | Free [OpenWeatherMap](https://openweathermap.org/api) key (sign-up, no credit card). Without it the widget shows "unavailable". |
-| `WEATHER_CITY` | City for the sidebar widget, e.g. `Tel Aviv,IL` (default). |
+| `WEATHER_CITY` | City for the weather widget, e.g. `Tel Aviv,IL` (default). |
 
 ### Endpoints
 | Method | Endpoint | Access | Purpose |
@@ -22,7 +22,7 @@ this Repo holds the code for a news site named FakestNews. It's a project by sev
 | `GET` | `/api/articles/:articleId/comments?before=<cursor>&limit=<n>` | Public | Newest-first comments, cursor paginated (`limit` max 50; `before` is the `nextCursor` from the previous page) |
 | `POST` | `/api/articles/:articleId/comments` | Public, rate-limited | Body: `{ "authorName": "...", "content": "..." }` |
 | `DELETE` | `/api/comments/:id` | Editor/Admin | Delete a comment (the article page shows a Delete button to moderators) |
-| `GET` | `/api/weather` | Public | Cached weather for the sidebar widget |
+| `GET` | `/api/weather` | Public | Cached weather for the weather widget |
 
 ### Quick checks
 ```bash

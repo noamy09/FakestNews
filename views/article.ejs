@@ -7,7 +7,6 @@
   <meta name="description" content="<%= article.summary || article.title %>">
   <meta name="author" content="<%= article.author ? (article.author.name || article.author.username) : 'Staff' %>">
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/sidebar.css">
   <link rel="stylesheet" href="/css/comments.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
 </head>
@@ -16,7 +15,6 @@
     <div class="header-container"><a href="/" class="brand-link">📰 Fakest News</a></div>
   </header>
 
-  <div class="page-layout">
   <main class="single-article-container">
     <article class="full-article">
       <header class="article-header">
@@ -89,11 +87,6 @@
       <button type="button" class="comments-more" id="comments-more" <%= locals.commentsHasMore ? '' : 'hidden' %>>Load older comments</button>
     </section>
   </main>
-
-  <aside class="public-sidebar" aria-label="Sidebar">
-    <%- include('partials/weatherWidget') %>
-  </aside>
-  </div>
 
   <script>
     (function() {
