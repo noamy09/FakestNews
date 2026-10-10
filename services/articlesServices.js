@@ -1,6 +1,7 @@
 const AppError = require("../utils/AppError");
 const Article = require("../models/articles");
 const ArticleStatistics = require("../models/statistics");
+const commentsServices = require("./commentsServices");
 const notesServices = require("./notesServices");
 const mongoose = require("mongoose");
 
@@ -305,12 +306,17 @@ const deleteArticle = async (id, user = null) => {
     }
 
     const deletedArticle = await Article.findByIdAndDelete(id);
+   
     if (deletedArticle) {
         try {
-            await notesServices.deleteNotesByArticleId(id);
+            await notesServices.deleteNotesByArticleId(id); // don't leave orphaned notes behind 
         } catch (err) {
             console.error(`Failed to delete notes for article ${id}:`, err);
         }
+        try {
+            await commentsServices.deleteArticleComments(id); // don't leave orphaned comments behind 
+        } catch (err) {
+            console.error(`Failed to delete comments for article ${id}:`, err);
     }
     return deletedArticle;
 }

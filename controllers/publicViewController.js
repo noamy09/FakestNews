@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const articlesServices = require('../services/articlesServices');
 const Article = require('../models/articles');
+const commentsServices = require('../services/commentsServices');
 const User = require('../models/User');
 
 /**
@@ -115,6 +116,10 @@ exports.renderArticlePage = async (req, res, next) => {
         if (!article || article.status !== 'published') {
             return res.status(404).render('error', { message: 'Article not found' });
         }
+        const [commentPage, commentCount] = await Promise.all([
+            commentsServices.getArticleComments(article._id),
+            commentsServices.countArticleComments(article._id)
+        ]);
 
         // Populate author username details for display on the single article view
         if (article.author) {
@@ -132,7 +137,16 @@ exports.renderArticlePage = async (req, res, next) => {
         // Render the single article EJS view template
         res.render('article', { 
             article,
-            user: currentUser
+          user: currentUser,
+            comments: commentPage.comments,
+            commentsHasMore: commentPage.hasMore,
+            commentsNextCursor: commentPage.nextCursor,
+            commentCount,
+            canModerate: commentsServices.canModerateComments(req.session?.user),
+            commentLimits: {
+                content: commentsServices.MAX_CONTENT_LENGTH,
+                name: commentsServices.MAX_NAME_LENGTH
+            }
         });
     } catch (err) {
         // Forward any caught errors to the global error-handling middleware

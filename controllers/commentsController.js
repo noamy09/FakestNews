@@ -1,46 +1,55 @@
 const commentService = require("../services/commentsServices.js");
+const { logSecurityEvent } = require("../middlewares/securityLogger");
 
-exports.getAll = async (req, res) => {
+// Errors go to the central error handler (middlewares/errorHandler.js) via next().
+
+exports.getAll = async (req, res, next) => {
     try {
         const comments = await commentService.getComments(req.query);
         res.status(200).json(comments);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: "Error fetching comments", error: error.message });
+        next(error);
     }
 };
 
-exports.getById = async (req, res) => {
+exports.getById = async (req, res, next) => {
     try {
         const comment = await commentService.getCommentByID(req.params.id);
         res.status(200).json(comment);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error fetching commnet ${req.params.id}`, error: error.message })
+        next(error);
     }
 };
 
-exports.create = async (req, res) => {
+exports.listForArticle = async (req, res, next) => {
     try {
-        const newComment = await commentService.createComment(req.body);
-        res.status(201).json(newComment);
+        const result = await commentService.getArticleComments(req.params.articleId, req.query);
+        res.status(200).json(result);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: "Error creating comment", error: error.message });
+        next(error);
     }
 };
 
-exports.update = async (req, res) => {
+exports.createForArticle = async (req, res, next) => {
     try {
-        const updatedComment = await commentService.updateComment(req.params.id, req.body);
-        res.status(200).json(updatedComment);
+        const comment = await commentService.createArticleComment(
+            req.params.articleId,
+            req.body,
+            req.session?.user
+        );
+        res.status(201).json(comment);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error updating commnet ${req.params.id}`, error: error.message })
+        next(error);
     }
 };
 
-exports.delete = async (req, res) => {
+// Moderation: requireAuth + requireRole('editor', 'admin') have already run.
+exports.delete = async (req, res, next) => {
     try {
-        const deletedComment = await commentService.deleteComment(req.params.id);
-        res.status(200).json(deletedComment);
+        const comment = await commentService.deleteComment(req.params.id);
+        logSecurityEvent("COMMENT_DELETED", { commentId: req.params.id, articleId: String(comment.articleId) }, req);
+        res.status(200).json(comment);
     } catch (error) {
-        res.status(error.statusCode || 500).json({ message: `Error deleting commnet ${req.params.id}`, error: error.message })
+        next(error);
     }
 };

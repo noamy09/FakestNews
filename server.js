@@ -6,6 +6,7 @@ const MongoStore = require("connect-mongo");
 const connectToDB = require("./models/db.js");
 const mainRouter = require("./routes/router");
 const errorHandler = require("./middlewares/errorHandler");
+const weatherService = require("./services/weatherService");
 
 connectToDB();
 
@@ -44,4 +45,5 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    weatherService.getWeather().catch(() => {}); // warm the cache so the first visitor doesn't wait
 });

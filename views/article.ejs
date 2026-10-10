@@ -9,6 +9,7 @@
   <meta name="author" content="<%= article.author.username %>">
   <!-- Stylesheets -->
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/comments.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
 </head>
 <body>
@@ -46,6 +47,55 @@
         <%- article.content %>
       </div>
     </article>
+
+    <%
+      // Defaults keep the page rendering if a controller passes only { article }.
+      const commentList = locals.comments || [];
+      const limits = locals.commentLimits || { name: 50, content: 1000 };
+    %>
+    <section class="comments" id="comments" aria-labelledby="comments-title"
+             data-article-id="<%= article._id %>"
+             data-next-cursor="<%= locals.commentsNextCursor || '' %>"
+             data-can-moderate="<%= locals.canModerate ? 'true' : 'false' %>">
+      <h2 id="comments-title" class="comments-title">
+        Comments <span class="comments-count" id="comments-count"><%= locals.commentCount ?? commentList.length %></span>
+      </h2>
+
+      <form class="comment-form" id="comment-form" novalidate>
+        <div class="comment-field">
+          <label for="comment-name">Name</label>
+          <input type="text" id="comment-name" name="authorName" maxlength="<%= limits.name %>"
+                 autocomplete="nickname" required placeholder="Your name">
+        </div>
+        <div class="comment-field">
+          <label for="comment-content">Comment</label>
+          <textarea id="comment-content" name="content" rows="4" maxlength="<%= limits.content %>"
+                    required placeholder="Share your thoughts..."></textarea>
+          <span class="comment-char-count" id="comment-char-count" aria-live="polite">0 / <%= limits.content %></span>
+        </div>
+        <div class="comment-actions">
+          <p class="comment-status" id="comment-status" role="status" aria-live="polite"></p>
+          <button type="submit" class="comment-submit" id="comment-submit">Post comment</button>
+        </div>
+      </form>
+
+      <ol class="comment-list" id="comment-list">
+        <% commentList.forEach(comment => { %>
+          <li class="comment" data-id="<%= comment._id %>">
+            <div class="comment-meta">
+              <span class="comment-author"><%= comment.authorName || 'Anonymous' %></span>
+              <time datetime="<%= new Date(comment.createdAt).toISOString() %>"><%= new Date(comment.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %></time>
+              <% if (locals.canModerate) { %>
+                <button type="button" class="comment-delete" aria-label="Delete comment by <%= comment.authorName || 'Anonymous' %>">Delete</button>
+              <% } %>
+            </div>
+            <p class="comment-content"><%= comment.content %></p>
+          </li>
+        <% }) %>
+      </ol>
+      <p class="comments-empty" id="comments-empty" <%= commentList.length ? 'hidden' : '' %>>No comments yet. Be the first to comment!</p>
+      <button type="button" class="comments-more" id="comments-more" <%= locals.commentsHasMore ? '' : 'hidden' %>>Load older comments</button>
+    </section>
   </main>
 
   <!-- Track viewed article ID in localStorage -->
@@ -59,6 +109,7 @@
       }
     })();
   </script>
+  <script src="/js/comments.js" defer></script>
   <!-- Off-canvas sidebar navigation partial -->
   <%- include('partials/sidebar') %>
 </body>
