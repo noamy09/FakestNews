@@ -4,18 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fakest News - Admin's Hub</title>
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/writersHub.css">
   <link rel="stylesheet" href="/css/adminHub.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+  <!-- Expose current user ID for client-side scripts -->
   <script>
     window.currentUserId = "<%= currentUser._id %>";
   </script>
+  <!-- Client-side logic for Admin Hub -->
   <script src="/js/adminHub.js" defer></script>
 </head>
 <body>
+  <!-- Header navigation partial -->
   <%- include('partials/header') %>
   <main class="hub-wrapper">
+    <!-- Hub banner header -->
     <div class="hub-header">
       <div>
         <h1>Admin's Hub</h1>
@@ -24,6 +29,7 @@
     </div>
 
     <div class="admin-grid">
+      <!-- User creation section -->
       <section class="admin-panel">
         <h2>Create User</h2>
         <div id="create-alert" class="admin-alert" role="status"></div>
@@ -50,6 +56,7 @@
             </select>
           </div>
 
+          <!-- Elevated privilege warning banner -->
           <div id="admin-role-warning" class="admin-role-warning" role="alert" hidden>
             <strong>⚠️ Elevated privileges</strong>
             This account will have full Admin access, including creating and deleting any user
@@ -60,6 +67,7 @@
         </form>
       </section>
 
+      <!-- User management and search section -->
       <section class="admin-panel">
         <h2>Users</h2>
         <form id="search-form" class="admin-search">
@@ -73,6 +81,7 @@
         </form>
         <div id="users-alert" class="admin-alert" role="status"></div>
 
+        <!-- Users data table -->
         <table class="users-table">
           <thead>
             <tr><th>Username</th><th>Email</th><th>Role</th><th>Created</th><th></th></tr>
@@ -84,6 +93,7 @@
     </div>
   </main>
 
+  <!-- Admin role confirmation modal -->
   <div id="admin-confirm-modal" class="admin-modal-backdrop" hidden>
     <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
       <h3 id="admin-modal-title">⚠️ Grant Admin privileges?</h3>
@@ -97,6 +107,7 @@
       </div>
     </div>
   </div>
+  <!-- Off-canvas sidebar partial -->
   <%- include('partials/sidebar') %>
 </body>
 </html>

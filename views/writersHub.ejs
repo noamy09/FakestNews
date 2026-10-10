@@ -3,43 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Page title -->
   <title>Fakest News - Writer's Hub</title>
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/writersHub.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+  <!-- Expose current user ID for client-side scripts -->
   <script>
     window.currentUserId = "<%= currentUser._id %>";
   </script>
+  <!-- Client-side script for writer dashboard columns -->
   <script src="/js/writersHub.js" defer></script>
 </head>
 <body>
+  <!-- Header navigation partial -->
   <%- include('partials/header') %>
+  <!-- Main dashboard wrapper -->
   <main class="hub-wrapper">
+    <!-- Hub banner header and action button -->
     <div class="hub-header">
       <h1>Writer's Hub</h1>
       <p>Welcome, <%= currentUser.username %></p>
       <a href="/WritersHub/new" class="btn btn-primary create-btn">Create New Article</a>
     </div>
 
+    <!-- Workflow status pillars container -->
     <div class="pillars-container">
+      <!-- Drafts column -->
       <div class="pillar" id="pillar-draft">
         <h2>Drafts</h2>
         <div class="pillar-content" id="content-draft"></div>
       </div>
+      <!-- Revisions column -->
       <div class="pillar" id="pillar-rejected">
         <h2>Returned for Revision</h2>
         <div class="pillar-content" id="content-rejected"></div>
       </div>
+      <!-- Pending review column -->
       <div class="pillar" id="pillar-pending">
         <h2>Pending (Read-only)</h2>
         <div class="pillar-content" id="content-pending"></div>
       </div>
+      <!-- Published live articles column -->
       <div class="pillar" id="pillar-published">
         <h2>Published</h2>
         <div class="pillar-content" id="content-published"></div>
       </div>
     </div>
   </main>
+  <!-- Off-canvas sidebar partial -->
   <%- include('partials/sidebar') %>
 </body>
 </html>

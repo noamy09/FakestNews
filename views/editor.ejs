@@ -14,13 +14,7 @@
     <link rel="stylesheet" href="/css/editor.css">
 </head>
 
-<body>
-    <header class="site-header">
-        <div class="header-container">
-            <a href="/" class="brand-link">Fakest News</a>
-        </div>
-    </header>
-
+<%- include('partials/header') %>
     <main class="editor-wrapper">
 
         <section class="editor-heading">
@@ -153,7 +147,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/editor.js"></script>
+    <script src="/js/editor.js"></script>
 </body>
-
+<%- include('partials/sidebar') %>
 </html>

@@ -3,27 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Page title -->
   <title>Fakest News - Home</title>
+  <!-- Global styling and favicon -->
   <link rel="stylesheet" href="/css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+  <!-- Client-side script for home feed logic and infinite scroll -->
   <script src="/js/home.js" defer></script>
 </head>
 <body>
+  <!-- Header navigation partial -->
   <%- include('partials/header') %>
 
+  <!-- Main feed container -->
   <main class="feed-wrapper">
+    <!-- Filter and search bar controls -->
     <section class="filter-bar">
+      <!-- Search input field -->
       <div class="search-wrapper">
         <span class="search-icon">🔍</span>
         <input type="text" id="search-input" placeholder="Search by title...">
       </div>
 
+      <!-- Category selection dropdown -->
       <div class="select-wrapper">
         <select id="category-filter" aria-label="Filter by category">
           <option value="all">All Categories</option>
         </select>
       </div>
 
+      <!-- Read/Unread status filter -->
       <div class="select-wrapper">
         <select id="read-filter">
           <option value="all">All Status</option>
@@ -32,36 +41,40 @@
         </select>
       </div>
 
+      <!-- Sorting order dropdown -->
       <div class="select-wrapper">
         <select id="sort-filter">
-          <option value="desc">Newest First</option>
-          <option value="asc">Oldest First</option>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
           <option value="popular">Most Popular</option>
         </select>
       </div>
     </section>
 
+    <!-- Articles grid rendered from server-side data -->
     <section class="articles-grid" id="articles-grid">
       <% articles.forEach(article => { %>
         <article class="article-card" data-id="<%= article._id %>">
           <img src="<%= article.imageUrl || '/images/placeholder.jpg' %>" onerror="this.onerror=null; this.src='/images/placeholder.jpg';" alt="<%= article.title %>">
           <div class="card-content">
             <span class="badge"><%= article.category || 'General' %></span>
-            <h2><a href="/articles/view/<%= article._id %>"><%= article.title %></a></h2>
+            <h2><a href="/articles/<%= article._id %>"><%= article.title %></a></h2>
             <p class="summary"><%= article.summary || '' %></p>
             <div class="card-meta">
-              <span>By: <%= typeof article.author === 'object' && article.author !== null ? (article.author.name || article.author.username || 'Staff') : (article.author || 'Staff') %></span>
-              <span><%= new Date(article.createdAt).toLocaleDateString('on-US') %></span>
+              <span>By: <%= article.author.username %></span>
+              <span><%= new Date(article.createdAt).toLocaleDateString('en-US') %></span>
             </div>
-          </div>
         </article>
       <% }) %>
     </section>
 
+    <!-- Infinite scroll observer sentinel -->
     <div id="scroll-sentinel" style="height: 20px;"></div>
+    <!-- Loading and status message indicator -->
     <div id="loading-state" class="loading-state" style="display: none;">Loading more articles...</div>
   </main>
 
+  <!-- Sidebar drawer partial -->
   <%- include('partials/sidebar') %>
 </body>
 </html>

@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Page title -->
   <title>Error - Fakest News</title>
+  <!-- Global stylesheet -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body style="text-align: center; padding: 50px;">
+  <!-- Error header -->
   <h1>Error</h1>
+  <!-- Dynamic error message with fallback -->
   <p><%= message || 'Something went wrong.' %></p>
+  <!-- Link back to public feed -->
   <a href="/">Back to Home Feed</a>
 </body>
 </html>
