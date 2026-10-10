@@ -221,8 +221,8 @@ exports.update = async (req, res, next) => {
             throw new AppError("User not found", 404);
         }
 
-        // Editors may only modify reporter accounts (or their own); admin/editor accounts are admin-only
-        if (currentUser.role === "editor" && !isSelf && targetUser.role !== "reporter") {
+        // Only administrators can modify other users. Non-admins can only modify their own profile.
+        if (currentUser.role !== "admin" && !isSelf) {
             logSecurityEvent("FORBIDDEN_USER_MODIFICATION_ATTEMPT", {
                 actorId: currentUser._id,
                 actorRole: currentUser.role,
@@ -230,7 +230,7 @@ exports.update = async (req, res, next) => {
                 targetRole: targetUser.role,
                 attemptedFields: Object.keys(updateData)
             }, req);
-            throw new AppError("Forbidden: Editors can only modify reporter accounts", 403);
+            throw new AppError("Forbidden: Only administrators can modify other users' accounts", 403);
         }
 
         const oldRole = targetUser.role;
