@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin's Hub - Fakest News</title>
+  <title>Fakest News - Admin's Hub</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/writersHub.css">
   <link rel="stylesheet" href="/css/adminHub.css">
@@ -14,10 +14,7 @@
   <script src="/js/adminHub.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-container"><a href="/" class="brand-link">📰 Fakest News</a></div>
-  </header>
-
+  <%- include('partials/header') %>
   <main class="hub-wrapper">
     <div class="hub-header">
       <div>
@@ -100,5 +97,6 @@
       </div>
     </div>
   </div>
+  <%- include('partials/sidebar') %>
 </body>
 </html>

@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {//verification that the DOM
 
 async function fetchArticles() {//fetching articles from the DB
     try {
-        const res = await fetch(`/api/articles?author=${window.dummyAuthorId}&limit=1000`);
+        const res = await fetch(`/api/articles?author=${window.currentUserId}&limit=1000`);
         const result = await res.json();
         const articles = result.data || result || [];
         

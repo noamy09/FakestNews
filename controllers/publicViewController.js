@@ -1,6 +1,8 @@
+const mongoose = require('mongoose');
 const articlesServices = require('../services/articlesServices');
 const Article = require('../models/articles');
 const commentsServices = require('../services/commentsServices');
+const User = require('../models/User');
 
 exports.renderFeed = async (req, res, next) => {
     try {
@@ -10,34 +12,51 @@ exports.renderFeed = async (req, res, next) => {
         const search = req.query.search;
         const sort = req.query.sort || 'newest';
 
-        const filter = { status: 'published' };
+        const serviceQuery = {
+            status: 'published',
+            page,
+            limit
+        };
+
         if (category && category !== 'all' && category.trim() !== '') {
-            filter.category = category;
+            serviceQuery.category = category.trim();
         }
+
         if (search && search.trim() !== '') {
-            filter.title = { $regex: search.trim(), $options: 'i' };
+            serviceQuery.search = search.trim();
         }
 
-        let sortOption = { createdAt: -1 };
         if (sort === 'oldest') {
-            sortOption = { createdAt: 1 };
+            serviceQuery.sortBy = JSON.stringify({ field: 'createdAt', order: 1 });
         } else if (sort === 'popular') {
-            sortOption = { views: -1 };
+            serviceQuery.sortBy = JSON.stringify({ field: 'views', order: -1 });
+        } else {
+            serviceQuery.sortBy = JSON.stringify({ field: 'createdAt', order: -1 });
         }
 
-        const result = await articlesServices.getArticles(filter, sortOption, page, limit);
-        const articles = Array.isArray(result) ? result : (result?.articles || result?.data || []);
+        const result = await articlesServices.getArticles(serviceQuery);
+        const articles = result?.data || [];
         const categories = await Article.distinct('category', { status: 'published' });
 
         if (req.xhr || req.headers.accept?.includes('application/json')) {
-            return res.json({ articles });
+            return res.json({ articles, pagination: result?.pagination });
+        }
+
+        let currentUser = req.session?.user || req.currentUser || null;
+        if (!currentUser && req.session?.userId) {
+            try {
+                currentUser = await User.findById(req.session.userId).lean();
+            } catch (e) {
+                console.error('Error fetching user from session ID:', e);
+            }
         }
 
         res.render('index', {
             articles,
             categories: categories || [],
             currentCategory: category || '',
-            currentSort: sort
+            currentSort: sort,
+            user: req.session?.user || null
         });
     } catch (err) {
         next(err);
@@ -46,6 +65,10 @@ exports.renderFeed = async (req, res, next) => {
 
 exports.renderArticlePage = async (req, res, next) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).render('error', { message: 'Article not found' });
+        }
+
         const article = await articlesServices.getArticleById(req.params.id);
         if (!article || article.status !== 'published') {
             return res.status(404).render('error', { message: 'Article not found' });
@@ -54,8 +77,12 @@ exports.renderArticlePage = async (req, res, next) => {
             commentsServices.getArticleComments(article._id),
             commentsServices.countArticleComments(article._id)
         ]);
+        
+        let currentUser = req.session?.user || req.currentUser || null;
+      
         res.render('article', {
             article,
+          user: currentUser,
             comments: commentPage.comments,
             commentsHasMore: commentPage.hasMore,
             commentsNextCursor: commentPage.nextCursor,
