@@ -180,28 +180,37 @@ const updateArticle = async (ArticleId, articleData, user = null) => {
                 throw new AppError("Forbidden: You can only edit your own articles", 403);
             }
             // Reporter status transition check: only editors can publish, archive, or return articles
-            if (articleData.status && ["published", "archived"].includes(articleData.status)) {
+            if (
+                (articleData.status && ["published", "archived"].includes(articleData.status)) ||
+                articleData.draftStatus === "rejected"
+            ) {
                 throw new AppError("Forbidden: Only editors can publish, return, or archive articles", 403);
             }
         }
     }
 
-    const { updaterId, edits, _id, ...otherFields } = articleData; //extract the metadata of the update and keep sperately from the rest of the update
+    const { updaterId, edits, _id, editorNote, ...otherFields } = articleData; //extract the metadata of the update and keep separately from other fields
 
-    // Persist review note if provided (e.g. when an editor returns an article for revision)
-    if (otherFields.editorNote && typeof otherFields.editorNote === 'string' && otherFields.editorNote.trim()) {
-        const noteAuthor = (user && user._id) || updaterId;
-        if (noteAuthor) {
-            try {
-                await notesServices.createNote({
-                    articleId: ArticleId,
-                    content: otherFields.editorNote.trim(),
-                    author: noteAuthor
-                });
-            } catch (noteErr) {
-                console.error(`Failed to record review note for article ${ArticleId}:`, noteErr);
-            }
+    let createdNoteId = null;
+
+    // Persist review note when returning for revision
+    if (otherFields.draftStatus === "rejected") {
+        const trimmedNote = typeof editorNote === "string" ? editorNote.trim() : "";
+        if (!trimmedNote) {
+            throw new AppError("Revision comments are required before returning an article.", 400);
         }
+
+        const noteAuthor = (user && user._id) || updaterId;
+        if (!noteAuthor) {
+            throw new AppError("Author identification is required to record a revision note", 400);
+        }
+
+        const newNote = await notesServices.createNote({
+            articleId: ArticleId,
+            content: trimmedNote,
+            author: noteAuthor
+        });
+        createdNoteId = newNote._id;
     }
 
     const updates = {};
@@ -274,13 +283,22 @@ const updateArticle = async (ArticleId, articleData, user = null) => {
         updates.$set = { ...otherFields };
     }
 
-
-    const updatedArticle = await Article.findByIdAndUpdate(
-        ArticleId, updates, { returnDocument: 'after', runValidators: true }); //returns the document after updates
-    if (!updatedArticle) {
-        throw new AppError("Article not found", 404);
+    try {
+        const updatedArticle = await Article.findByIdAndUpdate(
+            ArticleId, updates, { returnDocument: 'after', runValidators: true }); //returns the document after updates
+        if (!updatedArticle) {
+            throw new AppError("Article not found", 404);
+        }
+        return updatedArticle;
+    } catch (updateErr) {
+        // Rollback created note if article update failed to keep DB consistent
+        if (createdNoteId) {
+            await notesServices.deleteNote(createdNoteId).catch((delErr) => {
+                console.error(`Failed to clean up note ${createdNoteId} after article update failure:`, delErr);
+            });
+        }
+        throw updateErr;
     }
-    return updatedArticle;
 }
 
 const deleteArticle = async (id, user = null) => {
