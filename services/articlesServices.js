@@ -190,7 +190,7 @@ const updateArticle = async (ArticleId, articleData, user = null) => {
 
     // Persist review note if provided (e.g. when an editor returns an article for revision)
     if (otherFields.editorNote && typeof otherFields.editorNote === 'string' && otherFields.editorNote.trim()) {
-        const noteAuthor = (user && user._id) || updaterId || existingArticle.author;
+        const noteAuthor = (user && user._id) || updaterId;
         if (noteAuthor) {
             try {
                 await notesServices.createNote({

@@ -87,21 +87,21 @@ async function loadArticle(id) {
     }
 }
 
-function escapeHtml(str) {
+function escapeHtml(str) { // this function is meant to secure the input in case it isn't string
     if (!str) return '';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
 }
 
-async function fetchNotes(id) {
+async function fetchNotes(id) { // fetches the notes and renders them into the html
     try {
         const res = await fetch(`/api/notes?articleId=${id}&limit=100`);
         const notes = await res.json();
         const notesPanel = document.getElementById('notes-panel');
         const notesContent = document.getElementById('notes-content');
 
-        if (!notesPanel || !notesContent) return;
+        if (!notesPanel || !notesContent) return; // fetch notes only if they exist
 
         notesPanel.style.display = 'block';
 
@@ -389,9 +389,9 @@ async function autoSave() {
         isDirty = false;
         const now = new Date().toLocaleTimeString(); // gets the current time as a string (e.g. "12:00 PM")
         if (currentDraftStatus === 'rejected') {
-            document.getElementById('save-status').innerHTML = `Status: <span class="status-badge status-rejected">Returned for Revision</span> (Last auto-saved at ${now})`;
+            document.getElementById('save-status').innerHTML = `Status: <span class="status-badge status-rejected">Returned for Revision</span> (Last auto-saved at ${now})`; // preserves the current status as reject and adds the auto save remark
         } else {
-            document.getElementById('save-status').textContent = `Last auto-saved at ${now}`;
+            document.getElementById('save-status').textContent = `Last auto-saved at ${now}`; // sets the save status to the current time
         }
         return true;
     } catch (err) {
