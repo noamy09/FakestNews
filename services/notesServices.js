@@ -25,7 +25,7 @@ const IDValidation = (id) => {
 
 const getNotes = async (query = {}) => {
     const filter = {};
-    const allowedFilters = ['articleId', 'author', 'content', 'page', 'limit'];
+    const allowedFilters = ['articleId', 'author', 'content'];
 
     allowedFilters.forEach(field => {
         if (query[field]) {
