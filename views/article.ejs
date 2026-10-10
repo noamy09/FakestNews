@@ -30,17 +30,16 @@
         </div>
       </header>
 
-      <!-- Featured image banner with error fallback -->
-      <% if (article.imageUrl) { %>
-        <figure class="featured-media">
-          <img 
-            src="<%= article.imageUrl %>" 
-            alt="<%= article.title %>"
-            style="width: 100%; max-height: 480px; object-fit: contain; background-color: #f8fafc;"
-            onerror="this.onerror=null; this.src='/images/placeholder.jpg';"
-          >
-        </figure>
-      <% } %>
+      <!-- Featured image banner with ambient blur background -->
+      <% const displayImg = article.imageUrl || '/images/placeholder.jpg'; %>
+      <figure class="featured-media" style="--bg-image: url('<%= displayImg %>');">
+        <img 
+          src="<%= displayImg %>" 
+          alt="<%= article.title %>"
+          loading="lazy"
+          onerror="this.onerror=null; this.src='/images/placeholder.jpg'; this.closest('.featured-media')?.style.setProperty('--bg-image', 'url(\'/images/placeholder.jpg\')');"
+        >
+      </figure>
 
       <!-- Render formatted article body content -->
       <div class="article-body">

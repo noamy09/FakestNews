@@ -1,0 +1,126 @@
+.weather-widget {
+  display: flex;
+  align-items: center;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: #334155;
+  background: rgba(241, 245, 249, 0.7);
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 4px 14px;
+  margin: 0 12px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.weather-widget:hover {
+  background: rgba(241, 245, 249, 0.95);
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Loading & Error States */
+.weather-loading {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.weather-error {
+  color: #ef4444;
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+/* Main Container inside Widget */
+.weather-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Location text (City, Country) */
+.weather-location {
+  margin: 0;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+/* Weather main block (Icon & Temperature) */
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.weather-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
+
+.weather-temp {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+/* Description text (e.g., clear sky) */
+.weather-desc {
+  margin: 0;
+  text-transform: capitalize;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* Details list (Feels like, Humidity, Wind) */
+.weather-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding-left: 8px;
+  border-left: 1px solid #cbd5e1;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.weather-details div {
+  display: flex;
+  gap: 3px;
+}
+
+.weather-details dt {
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.weather-details dd {
+  margin: 0;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Timestamp footer */
+.weather-updated {
+  display: none; /* Hidden by default to keep the header clean and compact */
+}
+
+/* Responsive adjustment for mobile screens */
+@media (max-width: 900px) {
+  .weather-details,
+  .weather-desc {
+    display: none; /* Keep only location and temp on smaller screens */
+  }
+
+  .weather-widget {
+    padding: 2px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .weather-widget {
+    display: none; /* Hide entirely on very small mobile views if space is constrained */
+  }
+}

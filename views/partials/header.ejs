@@ -1,8 +1,18 @@
+<!-- Weather stylesheet -->
+<link rel="stylesheet" href="/css/weather.css">
+
 <!-- Site main header -->
 <header class="site-header">
   <div class="header-container">
     <!-- Brand link to home page -->
     <a href="/" class="brand-link">📰 Fakest News</a>
+
+    <!-- Weather Widget -->
+    <div id="weather-widget" class="weather-widget" aria-busy="true" aria-live="polite">
+      <div class="weather-body" data-state="loading">
+        <span class="weather-loading">Loading weather...</span>
+      </div>
+    </div>
     
     <!-- Dynamic action buttons container (fades in after auth check) -->
     <div class="header-actions" id="header-actions" style="opacity: 0; transition: opacity 0.15s ease;">
@@ -17,3 +27,6 @@
     </div>
   </div>
 </header>
+
+<!-- Weather Client Script -->
+<script src="/js/weather.js" defer></script>
