@@ -317,9 +317,10 @@ const deleteArticle = async (id, user = null) => {
             await commentsServices.deleteArticleComments(id); // don't leave orphaned comments behind 
         } catch (err) {
             console.error(`Failed to delete comments for article ${id}:`, err);
+        }
     }
     return deletedArticle;
-}
+};
 
 const getCategories = async () => {
     return await Article.distinct('category'); // returns an array of unique category values from the DB
