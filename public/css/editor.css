@@ -1,0 +1,565 @@
+/* =========================================================
+   Editor Dashboard
+   Page-specific styles.
+   Shared site styles are defined in /css/style.css.
+========================================================= */
+
+.editor-wrapper {
+    width: 100%;
+    max-width: 1400px;
+    margin: 2rem auto 4rem;
+    padding: 0 24px;
+}
+
+/* ---------- Page heading ---------- */
+
+.editor-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.editor-heading h1 {
+    margin: 0 0 0.35rem;
+    color: #0f172a;
+    font-size: 2rem;
+    letter-spacing: -0.03em;
+}
+
+.editor-heading p {
+    margin: 0;
+    color: #64748b;
+}
+
+.editor-analytics-link,
+.analytics-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 10px;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.editor-analytics-link {
+    padding: 0.75rem 1rem;
+    background: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.18);
+}
+
+.editor-analytics-link:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.22);
+}
+
+.analytics-page-link {
+    padding: 0.65rem 0.9rem;
+    color: #4f46e5;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+}
+
+.analytics-page-link:hover {
+    background: #e0e7ff;
+}
+
+/* ---------- Shared editor panels ---------- */
+
+.editor-panel {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.section-heading h2 {
+    margin: 0 0 0.25rem;
+    color: #0f172a;
+    font-size: 1.35rem;
+}
+
+.section-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* ---------- Filters ---------- */
+
+.editor-filter-bar {
+    margin: 0 0 1.5rem;
+}
+
+.editor-filter-bar .filter-controls {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.editor-filter-bar .select-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    min-width: 220px;
+}
+
+.editor-filter-bar label {
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.editor-filter-bar select {
+    width: 100%;
+}
+
+/* ---------- Article list ---------- */
+
+.editor-articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.editor-article-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.editor-article-card:hover {
+    transform: translateY(-2px);
+    border-color: #c7d2fe;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.08);
+}
+
+.editor-article-card h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 1.05rem;
+}
+
+.editor-article-card p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.editor-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.editor-status-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.editor-status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.editor-status-badge.published {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.editor-status-badge.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.editor-status-badge.draft {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+/* ---------- Review area ---------- */
+
+.review-container {
+    min-height: 180px;
+}
+
+.empty-state {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+}
+
+.empty-state h3 {
+    margin: 0 0 0.4rem;
+    color: #334155;
+}
+
+.empty-state p,
+.empty-state-message {
+    margin: 0;
+    color: #64748b;
+}
+
+.review-layout,
+.version-comparison {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.review-version {
+    min-width: 0;
+    padding: 1.25rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.review-version h3 {
+    margin: 0 0 1rem;
+    color: #0f172a;
+    font-size: 1rem;
+}
+
+.review-version.published-version {
+    border-top: 3px solid #22c55e;
+}
+
+.review-version.staged-version {
+    border-top: 3px solid #4f46e5;
+}
+
+.review-field {
+    margin-bottom: 1rem;
+}
+
+.review-field:last-child {
+    margin-bottom: 0;
+}
+
+.review-field label {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.review-field input,
+.review-field textarea,
+.review-field select {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+    outline: none;
+}
+
+.review-field textarea {
+    min-height: 130px;
+    resize: vertical;
+}
+
+.review-field input:focus,
+.review-field textarea:focus,
+.review-field select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.review-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: #334155;
+    line-height: 1.7;
+}
+
+.review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* ---------- Editor buttons ---------- */
+
+.editor-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.65rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.editor-btn:hover {
+    transform: translateY(-1px);
+}
+
+.editor-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.editor-btn-primary {
+    background: #4f46e5;
+    color: #ffffff;
+}
+
+.editor-btn-primary:hover {
+    background: #4338ca;
+}
+
+.editor-btn-success {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+.editor-btn-success:hover {
+    background: #15803d;
+}
+
+.editor-btn-warning {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+}
+
+.editor-btn-warning:hover {
+    background: #ffedd5;
+}
+
+.editor-btn-danger {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.editor-btn-danger:hover {
+    background: #fee2e2;
+}
+
+.editor-btn-secondary {
+    background: #ffffff;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+
+.editor-btn-secondary:hover {
+    background: #f8fafc;
+}
+
+/* ---------- Revision comments ---------- */
+
+.revision-comments {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+}
+
+.revision-comments label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: #9a3412;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.revision-comments textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.75rem;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #fdba74;
+    border-radius: 8px;
+    font: inherit;
+    resize: vertical;
+    outline: none;
+}
+
+.revision-comments textarea:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
+}
+
+/* ---------- Analytics ---------- */
+
+.chart-container {
+    margin-top: 1rem;
+}
+
+.chart-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 360px;
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.chart-wrapper canvas {
+    width: 100%;
+    max-height: 420px;
+}
+
+.update-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.comparison-card {
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.comparison-card h3,
+.comparison-card h4 {
+    margin: 0 0 0.5rem;
+    color: #0f172a;
+}
+
+.comparison-card p {
+    margin: 0.25rem 0;
+    color: #64748b;
+}
+
+.comparison-value {
+    color: #4f46e5;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* ---------- Messages ---------- */
+
+.editor-message {
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.editor-message-success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.editor-message-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+
+    .review-layout,
+    .version-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .editor-heading,
+    .section-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .editor-analytics-link,
+    .analytics-page-link {
+        width: fit-content;
+    }
+}
+
+@media (max-width: 768px) {
+    .editor-wrapper {
+        margin-top: 1rem;
+        padding: 0 16px;
+    }
+
+    .editor-panel {
+        padding: 1rem;
+    }
+
+    .editor-heading h1 {
+        font-size: 1.6rem;
+    }
+
+    .editor-filter-bar .select-wrapper {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .editor-articles-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .review-actions {
+        flex-direction: column;
+    }
+
+    .editor-btn {
+        width: 100%;
+    }
+
+    .chart-wrapper {
+        min-height: 300px;
+        padding: 0.75rem;
+    }
+}
