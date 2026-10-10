@@ -2,7 +2,8 @@
 
 let viewsChart = null;
 let selectedArticleId = null;
-
+let editorCategories = [];
+let currentEditorImageUrl = "";
 
 // =========================================================
 // INITIALIZATION
@@ -46,6 +47,14 @@ async function loadCategories() {
 
         const categories = await response.json();
 
+        editorCategories = Array.isArray(categories)
+            ? categories
+                .filter(Boolean)
+                .sort((a, b) =>
+                    String(a).localeCompare(String(b))
+                )
+            : [];
+
         const currentValue = categoryFilter.value;
 
         categoryFilter.textContent = "";
@@ -55,21 +64,12 @@ async function loadCategories() {
         allOption.textContent = "All categories";
         categoryFilter.appendChild(allOption);
 
-        if (Array.isArray(categories)) {
-            categories
-                .filter(Boolean)
-                .sort((a, b) =>
-                    String(a).localeCompare(String(b))
-                )
-                .forEach((category) => {
-                    const option = document.createElement("option");
-
-                    option.value = category;
-                    option.textContent = category;
-
-                    categoryFilter.appendChild(option);
-                });
-        }
+        editorCategories.forEach((category) => {
+            const option = document.createElement("option");
+            option.value = category;
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
 
         if (
             [...categoryFilter.options].some(
@@ -81,6 +81,7 @@ async function loadCategories() {
 
     } catch (error) {
         console.error("Error loading categories:", error);
+        editorCategories = [];
     }
 }
 
@@ -289,6 +290,29 @@ function getStatusLabel(status) {
 
     return status || "Unknown";
 }
+async function fetchArticleNotes(articleId) {
+    try {
+        const response = await fetch(
+            `/api/notes?articleId=${articleId}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch article notes");
+        }
+
+        const notes = await response.json();
+
+        return Array.isArray(notes) ? notes : [];
+
+    } catch (error) {
+        console.error(
+            "Error loading article notes:",
+            error
+        );
+
+        return [];
+    }
+}
 
 
 // =========================================================
@@ -321,7 +345,9 @@ async function loadArticleForEditor(articleId) {
 
         const article = await response.json();
 
-        renderArticleDetails(article);
+        const notes = await fetchArticleNotes(articleId);
+
+        renderArticleDetails(article, notes);
 
     } catch (error) {
         console.error("Error loading article:", error);
@@ -337,7 +363,7 @@ async function loadArticleForEditor(articleId) {
 }
 
 
-function renderArticleDetails(article) {
+function renderArticleDetails(article, notes = []) {
     const container = document.getElementById("review-container");
 
     const hasDraft = Boolean(article.draft);
@@ -399,6 +425,10 @@ function renderArticleDetails(article) {
 
         details.appendChild(layout);
     }
+
+    details.appendChild(
+        createNotesHistory(notes)
+    );
 
     details.appendChild(
         createEditorActions(article, hasPendingDraft)
@@ -490,6 +520,13 @@ function createReviewVersion(article, editable) {
         article.content ??
         "";
 
+    const imageUrl =
+        article.draft?.imageUrl ??
+        article.imageUrl ??
+        "";
+
+    currentEditorImageUrl = imageUrl;
+
     section.appendChild(
         createEditableField(
             "Title",
@@ -501,11 +538,8 @@ function createReviewVersion(article, editable) {
     );
 
     section.appendChild(
-        createEditableField(
-            "Category",
-            "edit-category",
+        createEditableCategoryField(
             category,
-            "input",
             editable
         )
     );
@@ -528,6 +562,12 @@ function createReviewVersion(article, editable) {
             "textarea",
             editable,
             true
+        )
+    );
+    section.appendChild(
+        createEditableImageField(
+            imageUrl,
+            editable
         )
     );
 
@@ -594,6 +634,451 @@ function createEditableField(
     return wrapper;
 }
 
+function createEditableCategoryField(currentCategory, editable) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "review-field";
+
+    const label = document.createElement("label");
+    label.htmlFor = "edit-category";
+    label.textContent = "Category";
+
+    const select = document.createElement("select");
+    select.id = "edit-category";
+    select.disabled = !editable;
+
+    const placeholderOption = document.createElement("option");
+    placeholderOption.value = "";
+    placeholderOption.textContent = "Select category";
+    select.appendChild(placeholderOption);
+
+    editorCategories.forEach((category) => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        select.appendChild(option);
+    });
+
+    /*
+     * If the article already has a category that is not currently
+     * in the standard category list, keep it as a custom category.
+     */
+    if (
+        currentCategory &&
+        !editorCategories.some(
+            (category) =>
+                String(category).toLowerCase() ===
+                String(currentCategory).toLowerCase()
+        )
+    ) {
+        const customOption = document.createElement("option");
+        customOption.className = "custom-category-option";
+        customOption.value = currentCategory;
+        customOption.textContent = currentCategory;
+        select.appendChild(customOption);
+    }
+
+    select.value = currentCategory || "";
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(select);
+
+    if (editable) {
+        const controls = document.createElement("div");
+        controls.className = "category-custom-controls";
+
+        const customButton = document.createElement("button");
+        customButton.type = "button";
+        customButton.className =
+            "editor-btn editor-btn-secondary";
+        customButton.textContent = "Custom Category";
+
+        const customContainer = document.createElement("div");
+        customContainer.className = "custom-category-container";
+        customContainer.style.display = "none";
+
+        const customInput = document.createElement("input");
+        customInput.type = "text";
+        customInput.placeholder = "Enter custom category";
+
+        const applyButton = document.createElement("button");
+        applyButton.type = "button";
+        applyButton.className =
+            "editor-btn editor-btn-secondary";
+        applyButton.textContent = "Apply";
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.className =
+            "editor-btn editor-btn-secondary";
+        cancelButton.textContent = "Cancel";
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className =
+            "editor-btn editor-btn-warning";
+        removeButton.textContent = "Remove Custom Category";
+        removeButton.style.display = "none";
+
+        function updateRemoveButton() {
+            const selectedOption =
+                select.options[select.selectedIndex];
+
+            if (
+                selectedOption &&
+                selectedOption.classList.contains(
+                    "custom-category-option"
+                )
+            ) {
+                removeButton.style.display = "inline-block";
+            } else {
+                removeButton.style.display = "none";
+            }
+        }
+
+        function applyCustomCategory() {
+            const newCategory = customInput.value.trim();
+
+            if (!newCategory) {
+                alert("Please enter a category name.");
+                customInput.focus();
+                return;
+            }
+
+            /*
+             * If the entered category already exists,
+             * select the existing category instead of creating
+             * another custom option.
+             */
+            const existingOption =
+                Array.from(select.options).find(
+                    (option) =>
+                        option.value.toLowerCase() ===
+                        newCategory.toLowerCase() &&
+                        !option.classList.contains(
+                            "custom-category-option"
+                        )
+                );
+
+            const previousCustom =
+                select.querySelector(
+                    ".custom-category-option"
+                );
+
+            if (existingOption) {
+                if (previousCustom) {
+                    previousCustom.remove();
+                }
+
+                select.value = existingOption.value;
+            } else {
+                if (previousCustom) {
+                    previousCustom.remove();
+                }
+
+                const customOption =
+                    document.createElement("option");
+
+                customOption.className =
+                    "custom-category-option";
+
+                customOption.value = newCategory;
+                customOption.textContent = newCategory;
+
+                select.appendChild(customOption);
+                select.value = newCategory;
+            }
+
+            customInput.value = "";
+            customContainer.style.display = "none";
+
+            updateRemoveButton();
+        }
+
+        customButton.addEventListener("click", () => {
+            const isHidden =
+                customContainer.style.display === "none";
+
+            if (isHidden) {
+                customContainer.style.display = "flex";
+                customInput.focus();
+            } else {
+                customContainer.style.display = "none";
+                customInput.value = "";
+            }
+        });
+
+        applyButton.addEventListener(
+            "click",
+            applyCustomCategory
+        );
+
+        cancelButton.addEventListener("click", () => {
+            customContainer.style.display = "none";
+            customInput.value = "";
+        });
+
+        customInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                applyCustomCategory();
+            }
+
+            if (event.key === "Escape") {
+                customContainer.style.display = "none";
+                customInput.value = "";
+            }
+        });
+
+        select.addEventListener(
+            "change",
+            updateRemoveButton
+        );
+
+        removeButton.addEventListener("click", () => {
+            const customOption =
+                select.querySelector(
+                    ".custom-category-option"
+                );
+
+            if (customOption) {
+                customOption.remove();
+            }
+
+            select.value = "";
+            updateRemoveButton();
+        });
+
+        customContainer.appendChild(customInput);
+        customContainer.appendChild(applyButton);
+        customContainer.appendChild(cancelButton);
+
+        controls.appendChild(customButton);
+        controls.appendChild(customContainer);
+        controls.appendChild(removeButton);
+
+        wrapper.appendChild(controls);
+
+        updateRemoveButton();
+    }
+
+    return wrapper;
+}
+function createEditableImageField(imageUrl, editable) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "review-field";
+
+    const label = document.createElement("label");
+    label.textContent = "Picture";
+
+    wrapper.appendChild(label);
+
+    const previewContainer = document.createElement("div");
+    previewContainer.id = "editor-image-preview-container";
+    previewContainer.style.marginTop = "10px";
+
+    const preview = document.createElement("img");
+    preview.id = "editor-image-preview";
+    preview.alt = "Article picture";
+    preview.style.maxWidth = "250px";
+    preview.style.maxHeight = "250px";
+    preview.style.display = "block";
+    preview.style.marginBottom = "10px";
+
+    function showPreview(url) {
+        if (url) {
+            preview.src = url;
+            previewContainer.style.display = "block";
+        } else {
+            preview.src = "";
+            previewContainer.style.display = "none";
+        }
+    }
+
+    showPreview(imageUrl);
+
+    previewContainer.appendChild(preview);
+
+    wrapper.appendChild(previewContainer);
+
+    if (!editable) {
+        if (!imageUrl) {
+            const noImage = document.createElement("p");
+            noImage.textContent = "No picture";
+            wrapper.appendChild(noImage);
+        }
+
+        return wrapper;
+    }
+
+    const uploadInput = document.createElement("input");
+    uploadInput.type = "file";
+    uploadInput.id = "editor-image-upload";
+    uploadInput.accept = "image/*";
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className =
+        "editor-btn editor-btn-danger";
+    removeButton.textContent = "Remove Picture";
+    removeButton.style.marginTop = "10px";
+
+    function updateRemoveButton() {
+        removeButton.style.display =
+            currentEditorImageUrl
+                ? "inline-block"
+                : "none";
+    }
+
+    uploadInput.addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = async (readerEvent) => {
+            try {
+                const response = await fetch(
+                    "/WritersHub/upload-image",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            imageBase64: readerEvent.target.result,
+                            filename: file.name
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Failed to upload picture"
+                    );
+                }
+
+                const data = await response.json();
+
+                if (!data.imageUrl) {
+                    throw new Error(
+                        "Upload did not return an image URL"
+                    );
+                }
+
+                currentEditorImageUrl = data.imageUrl;
+
+                showPreview(currentEditorImageUrl);
+                updateRemoveButton();
+
+            } catch (error) {
+                console.error(
+                    "Error uploading picture:",
+                    error
+                );
+
+                alert("Could not upload picture.");
+                uploadInput.value = "";
+            }
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+    removeButton.addEventListener("click", async () => {
+        if (!currentEditorImageUrl) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/WritersHub/remove-image",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        imageUrl: currentEditorImageUrl
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to remove picture"
+                );
+            }
+
+            currentEditorImageUrl = "";
+
+            showPreview("");
+            uploadInput.value = "";
+            updateRemoveButton();
+
+        } catch (error) {
+            console.error(
+                "Error removing picture:",
+                error
+            );
+
+            alert("Could not remove picture.");
+        }
+    });
+
+    wrapper.appendChild(uploadInput);
+    wrapper.appendChild(removeButton);
+
+    updateRemoveButton();
+
+    return wrapper;
+}
+function createNotesHistory(notes) {
+    const section = document.createElement("section");
+
+    section.className = "editor-notes-history";
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Review Notes History";
+
+    section.appendChild(heading);
+
+    if (!Array.isArray(notes) || notes.length === 0) {
+        const emptyMessage = document.createElement("p");
+
+        emptyMessage.className = "editor-message";
+        emptyMessage.textContent =
+            "No previous review notes for this article.";
+
+        section.appendChild(emptyMessage);
+
+        return section;
+    }
+
+    notes.forEach((note) => {
+        const noteCard = document.createElement("div");
+
+        noteCard.className = "editor-note-history-item";
+
+        const date = document.createElement("strong");
+
+        date.textContent = note.createdAt
+            ? new Date(note.createdAt).toLocaleString()
+            : "Previous review";
+
+        const content = document.createElement("p");
+        content.textContent = note.content || "";
+
+        noteCard.appendChild(date);
+        noteCard.appendChild(content);
+
+        section.appendChild(noteCard);
+    });
+
+    return section;
+}
 
 // =========================================================
 // EDITOR ACTIONS
@@ -716,7 +1201,7 @@ async function saveArticleChanges(articleId) {
             "Title, category, summary and content are required."
         );
 
-        return;
+        return false;
     }
 
     try {
@@ -734,7 +1219,8 @@ async function saveArticleChanges(articleId) {
                     title,
                     category,
                     summary,
-                    content
+                    content,
+                    imageUrl: currentEditorImageUrl
                 })
             }
         );
@@ -752,6 +1238,8 @@ async function saveArticleChanges(articleId) {
 
         await refreshSelectedArticle(articleId);
 
+        return true;
+
     } catch (error) {
         console.error(
             "Error saving article changes:",
@@ -759,6 +1247,7 @@ async function saveArticleChanges(articleId) {
         );
 
         alert("Could not save article changes.");
+        return false;
     }
 }
 
@@ -839,11 +1328,19 @@ async function returnArticleForCorrections(articleId) {
 async function approveArticle(articleId) {
     try {
         /*
-         * The authenticated Editor identity must ultimately
-         * come from server-side authentication.
-         *
-         * We intentionally do NOT send an arbitrary updaterId
-         * from the browser.
+         * Save the current Editor changes first.
+         * This follows the same workflow used by the Writer:
+         * save the current draft before changing its workflow state.
+         */
+        const saved = await saveArticleChanges(articleId);
+
+        if (!saved) {
+            return;
+        }
+
+        /*
+         * The authenticated Editor identity must come
+         * from server-side authentication.
          */
         const response = await fetch(
             `/api/articles/${articleId}`,
@@ -870,7 +1367,9 @@ async function approveArticle(articleId) {
         }
 
         alert("Article approved and published.");
+
         selectedArticleId = null;
+
         await loadArticles();
         resetSelectedArticle();
 
@@ -881,8 +1380,8 @@ async function approveArticle(articleId) {
         );
 
         alert(
-            "Could not approve article. " +
-            "Server-side Editor authentication may still need to be connected."
+            "Could not approve article: " +
+            error.message
         );
     }
 }
