@@ -9,64 +9,49 @@
   <script src="/js/home.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-container">
-      <a href="/" class="brand-link">📰 Fakest News</a>
-      <% 
-        // TODO: Implement RBAC. Once users are configured, uncomment this to restrict access:
-        // const hasMenuAccess = user && ['Admin', 'Editor', 'Writer', 'Reporter'].includes(user.role);
-        const hasMenuAccess = true; // Temporary bypass for now
-      %>
-      <% if (hasMenuAccess) { %>
-        <button id="role-menu-btn" class="role-menu-btn">
-          <img src="/images/editArticle.png" alt="Role Menu" class="menu-icon" />
-        </button>
-      <% } %>
-    </div>
-  </header>
+  <%- include('partials/header') %>
 
   <main class="feed-wrapper">
-  <section class="filter-bar">
-  <div class="search-wrapper">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="search-input" placeholder="Search by title...">
-  </div>
+    <section class="filter-bar">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search by title...">
+      </div>
 
-<div class="select-wrapper">
-  <select id="category-filter" aria-label="Filter by category">
-    <option value="all">All Categories</option>
-  </select>
-</div>
+      <div class="select-wrapper">
+        <select id="category-filter" aria-label="Filter by category">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
 
-    <div class="select-wrapper">
-      <select id="read-filter">
-        <option value="">All Status</option>
-        <option value="unread">Unread Only</option>
-        <option value="read">Read Only</option>
-      </select>
-    </div>
+      <div class="select-wrapper">
+        <select id="read-filter">
+          <option value="all">All Status</option>
+          <option value="unread">Unread Only</option>
+          <option value="read">Read Only</option>
+        </select>
+      </div>
 
-    <div class="select-wrapper">
-      <select id="sort-filter">
-        <option value="desc">Newest First</option>
-        <option value="asc">Oldest First</option>
-        <option value="popular">Most Popular</option>
-      </select>
-    </div>
-  </div>
-</section>
+      <div class="select-wrapper">
+        <select id="sort-filter">
+          <option value="desc">Newest First</option>
+          <option value="asc">Oldest First</option>
+          <option value="popular">Most Popular</option>
+        </select>
+      </div>
+    </section>
 
     <section class="articles-grid" id="articles-grid">
       <% articles.forEach(article => { %>
         <article class="article-card" data-id="<%= article._id %>">
-          <img src="<%= article.imageUrl || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80' %>" alt="<%= article.title %>">
+          <img src="<%= article.imageUrl || '/images/placeholder.jpg' %>" onerror="this.onerror=null; this.src='/images/placeholder.jpg';" alt="<%= article.title %>">
           <div class="card-content">
             <span class="badge"><%= article.category || 'General' %></span>
             <h2><a href="/articles/view/<%= article._id %>"><%= article.title %></a></h2>
             <p class="summary"><%= article.summary || '' %></p>
             <div class="card-meta">
-              <span>By: <%= article.author ? (article.author.name || article.author.username) : 'Staff' %></span>
-              <span><%= new Date(article.createdAt).toLocaleDateString('en-US') %></span>
+              <span>By: <%= typeof article.author === 'object' && article.author !== null ? (article.author.name || article.author.username || 'Staff') : (article.author || 'Staff') %></span>
+              <span><%= new Date(article.createdAt).toLocaleDateString('on-US') %></span>
             </div>
           </div>
         </article>
@@ -74,25 +59,9 @@
     </section>
 
     <div id="scroll-sentinel" style="height: 20px;"></div>
-    <div id="loading-text" class="loading-state" style="display: none;">Loading more articles...</div>
+    <div id="loading-state" class="loading-state" style="display: none;">Loading more articles...</div>
   </main>
 
-  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
-  <aside id="sidebar-menu" class="sidebar-menu">
-    <div class="sidebar-header">
-      <h2>Hub Menu</h2>
-      <button id="close-sidebar-btn" class="close-sidebar-btn">&times;</button>
-    </div>
-    <nav class="sidebar-nav">
-      <ul>
-        <li><a href="/WritersHub" id="hub-writer-link">Writer's Hub</a></li>
-        <li><a href="/EditorsHub" id="hub-editor-link" class="disabled-link">Editor's Hub</a></li>
-        <li><a href="/AdminHub" id="hub-admin-link" class="disabled-link">Admin's Hub</a></li>
-      </ul>
-      <div id="hub-user-section"></div>
-    </nav>
-  </aside>
-
+  <%- include('partials/sidebar') %>
 </body>
-<script src="/hubNavigation.js"></script>
 </html>
