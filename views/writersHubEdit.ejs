@@ -3,32 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Page title -->
   <title>Edit Article - Writer's Hub</title>
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/writersHub.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+  <!-- Pass active article ID and current user ID to client-side scripts -->
   <script>
     window.articleId = "<%= articleId %>";
     window.currentUserId = "<%= currentUser._id %>";
   </script>
+  <!-- Client-side editor controller script -->
   <script src="/js/writersHubEdit.js" defer></script>
 </head>
 <body>
+  <!-- Header with back navigation link -->
   <header class="site-header">
     <div class="header-container"><a href="/WritersHub" class="brand-link">⬅ Back</a></div>
   </header>
 
+  <!-- Editor main layout container -->
   <main class="editor-wrapper">
     <div class="editor-main">
       <h1>Edit Article</h1>
+      <!-- Real-time autosave / status feedback indicator -->
       <div id="save-status" class="save-status">Status: Idle</div>
       
+      <!-- Article editing form -->
       <form id="editor-form">
+        <!-- Title field -->
         <div class="form-group">
           <label>Article Title <span class="required" style="color: red;">*</span></label>
           <input type="text" id="title" required>
         </div>
         
+        <!-- Category selection and custom addition -->
         <div class="form-group">
           <label>Category</label>
           <div class="category-controls">
@@ -38,6 +48,7 @@
             <button type="button" id="btn-remove-custom-category" class="btn btn-small btn-danger" style="display: none;" title="Remove custom category">✕</button>
             <button type="button" id="btn-custom-category" class="btn btn-small">Add Custom Category</button>
           </div>
+          <!-- Inline form for adding a custom category -->
           <div id="custom-category-container" class="custom-category-container" style="display: none;">
             <input type="text" id="custom-category-input" placeholder="Enter new category name..." maxlength="50">
             <button type="button" id="btn-apply-custom-category" class="btn btn-small btn-primary">Add</button>
@@ -45,16 +56,19 @@
           </div>
         </div>
         
+        <!-- Summary field -->
         <div class="form-group">
           <label>Summary <span class="required" style="color: red;">*</span></label>
           <textarea id="summary" rows="3" required></textarea>
         </div>
         
+        <!-- Main body content field -->
         <div class="form-group">
           <label>Content <span class="required" style="color: red;">*</span></label>
           <textarea id="content" rows="15" required></textarea>
         </div>
         
+        <!-- Image upload and preview controls -->
         <div class="form-group">
           <label>Picture</label>
           <input type="file" id="image-upload" accept="image/*">
@@ -64,6 +78,7 @@
           </div>
         </div>
 
+        <!-- Form action triggers -->
         <div class="actions">
           <button type="button" id="btn-delete" class="btn btn-danger" style="display: none;">Delete Draft</button>
           <button type="button" id="btn-send-pending" class="btn btn-primary">Send to Pending (Submit to Editor)</button>
@@ -71,6 +86,7 @@
       </form>
     </div>
 
+    <!-- Review feedback sidebar (visible when returned for revision) -->
     <aside class="notes-panel" id="notes-panel" style="display: none;">
       <h2>Review Notes</h2>
       <div id="notes-content"></div>

@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    /**
+     * Opens the off-canvas sidebar menu and displays the backdrop overlay.
+     */
     function openSidebar() {
         const sidebarMenu = document.getElementById('sidebar-menu');
         const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -6,6 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sidebarBackdrop) sidebarBackdrop.classList.add('open');
     }
 
+    /**
+     * Closes the off-canvas sidebar menu and hides the backdrop overlay.
+     */
     function closeSidebar() {
         const sidebarMenu = document.getElementById('sidebar-menu');
         const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -13,8 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sidebarBackdrop) sidebarBackdrop.classList.remove('open');
     }
 
+    // Global event delegation for sidebar opening, closing, and backdrop dismissal
     document.addEventListener('click', (e) => {
-        // Open hub
+        // Open sidebar via header role button
         const hubBtn = e.target.closest('#role-menu-btn');
         if (hubBtn) {
             e.preventDefault();
@@ -23,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Close by X
+        // Close sidebar via the dismiss (X) button
         const closeBtn = e.target.closest('#close-sidebar-btn');
         if (closeBtn) {
             e.preventDefault();
@@ -32,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Backdrop
+        // Close sidebar when clicking outside on the dark backdrop
         const backdrop = e.target.closest('#sidebar-backdrop');
         if (backdrop) {
             e.preventDefault();
@@ -43,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, true);
 
     // 2. Auth State Check via API & Dynamic UI Update
+    // Cache UI action triggers and sidebar navigation link elements
     const loginBtn = document.getElementById('header-login-btn');
     const logoutBtn = document.getElementById('header-logout-btn');
     const roleMenuBtn = document.getElementById('role-menu-btn');
@@ -54,6 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const hubUserInfo = document.getElementById('hub-user-info');
 
     try {
+        // Check current session authentication status against the API
         const res = await fetch('/api/users/me', {
             headers: { 'Accept': 'application/json' }
         });
@@ -63,30 +72,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             const user = data.user || data.data || data;
             const role = String(user?.role || '').toLowerCase();
 
+            // If user is authenticated, toggle header buttons and expose permitted hub links
             if (role) {
                 if (loginBtn) loginBtn.style.display = 'none';
                 if (roleMenuBtn) roleMenuBtn.style.display = 'flex';
                 if (logoutBtn) logoutBtn.style.display = 'inline-flex';
 
+                // Display active user badge and username within the sidebar header
                 if (hubUserInfo) {
                     hubUserInfo.style.display = 'block';
                     hubUserInfo.innerHTML = `Logged in as <strong>${role}</strong> (${user.username || user.name || ''})`;
                 }
 
-                if (['writer', 'reporter', 'editor', 'admin'].includes(role) && itemWriterHub) {
+                // Grant access to Writer Hub for reporters, editors, and admins
+                if (['reporter', 'editor', 'admin'].includes(role) && itemWriterHub) {
                     itemWriterHub.style.display = 'block';
                 }
+                // Grant access to Editor Hub for editors and admins
                 if (['editor', 'admin'].includes(role) && itemEditorHub) {
                     itemEditorHub.style.display = 'block';
                 }
+                // Grant access to Admin Hub exclusively for admins
                 if (role === 'admin' && itemAdminHub) {
                     itemAdminHub.style.display = 'block';
                 }
             }
         }
     } catch (err) {
+        // Log errors encountered during auth state evaluation
         console.error('Auth check error:', err);
     } finally {
+        // Reveal header buttons smoothly once auth state determination completes
         if (headerActions) {
             headerActions.style.opacity = '1';
         }
@@ -97,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
+                // Invalidate server session
                 await fetch('/api/users/logout', {
                     method: 'POST',
                     headers: { 'Accept': 'application/json' }
@@ -104,6 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (err) {
                 console.error('Logout error:', err);
             } finally {
+                // Redirect back to home page upon logout completion
                 window.location.href = '/';
             }
         });

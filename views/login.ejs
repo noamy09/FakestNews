@@ -3,123 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Page title -->
   <title>Fakest News - Login</title>
+  <!-- Global and login page stylesheets -->
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/login.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
-  <style>
-    .auth-container {
-      max-width: 440px;
-      margin: 4rem auto;
-      padding: 2.5rem 2rem;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
-    }
-    .auth-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .auth-header h1 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 0.5rem;
-    }
-    .auth-header p {
-      color: #64748b;
-      font-size: 0.95rem;
-    }
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
-    .form-group label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #334155;
-      margin-bottom: 0.5rem;
-    }
-    .form-group input {
-      width: 100%;
-      height: 44px;
-      padding: 0 14px;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      color: #1e293b;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-    .form-group input:focus {
-      background: #ffffff;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-    .auth-submit-btn {
-      width: 100%;
-      height: 46px;
-      background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
-      color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-top: 0.5rem;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    }
-    .auth-submit-btn:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-    }
-    .error-alert {
-      display: none;
-      padding: 0.75rem 1rem;
-      background: #fef2f2;
-      border: 1px solid #fca5a5;
-      border-radius: 8px;
-      color: #b91c1c;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-bottom: 1.25rem;
-    }
-    .auth-footer {
-      text-align: center;
-      margin-top: 1.75rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid #f1f5f9;
-      font-size: 0.9rem;
-      color: #64748b;
-    }
-    .auth-footer a {
-      color: #2563eb;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .auth-footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
 </head>
 <body>
+  <!-- Simplified site header -->
   <header class="site-header">
     <div class="header-container">
       <a href="/" class="brand-link">📰 Fakest News</a>
     </div>
   </header>
 
+  <!-- Login view wrapper -->
   <main class="feed-wrapper">
     <div class="auth-container">
+      <!-- Welcome header text -->
       <div class="auth-header">
         <h1>Welcome!</h1>
-        <p>Sign in to access your Hub workspace</p>
+        <p>Login to access your Hub workspace</p>
       </div>
 
+      <!-- Error message container -->
       <div id="login-error" class="error-alert"></div>
 
+      <!-- Authentication form -->
       <form id="login-form">
         <div class="form-group">
           <label for="email">Email Address</label>
@@ -131,29 +42,35 @@
           <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
 
-        <button type="submit" class="auth-submit-btn" id="submit-btn">Sign In</button>
+        <!-- Submit button -->
+        <button type="submit" class="auth-submit-btn" id="submit-btn">Login</button>
       </form>
 
+      <!-- Account assistance notice -->
       <div class="auth-footer">
         Need an account? Contact your site administrator.
       </div>
     </div>
   </main>
 
+  <!-- Client-side authentication handler -->
   <script>
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const errorDiv = document.getElementById('login-error');
       const submitBtn = document.getElementById('submit-btn');
       
+      // Reset alert state and show pending label
       errorDiv.style.display = 'none';
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Signing in...';
+      submitBtn.textContent = 'Logging in...';
 
+      // Read form input values
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
       try {
+        // Send login POST request to authentication endpoint
         const res = await fetch('/login', {
           method: 'POST',
           headers: {
@@ -165,6 +82,7 @@
 
         const data = await res.json();
 
+        // Handle unsuccessful login responses
         if (!res.ok) {
           throw new Error(data.message || 'Login failed. Please check your credentials.');
         }
@@ -172,11 +90,13 @@
         // Redirect on successful login
         window.location.href = '/';
       } catch (err) {
+        // Render failure message
         errorDiv.textContent = err.message;
         errorDiv.style.display = 'block';
       } finally {
+        // Restore button state
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
+        submitBtn.textContent = 'Login';
       }
     });
   </script>
